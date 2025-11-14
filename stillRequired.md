@@ -1,0 +1,5 @@
+- electron client need special OS function??
+    - notify each transaction?
+    - create a csv file 
+    - open user directory, so that user can choose csv dump file directory
+    - for chasier, store unsubmitted data

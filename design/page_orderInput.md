@@ -1,0 +1,21 @@
+- adding a menu
+    - menu list
+        - a list of all menu
+        - there is a ribbon with all the category, clicking it will move the view port position to there
+        - is in the form of grid, some spot can be empty (unlike flex which it will fill the spot from top to bottom)
+    - menu action (desktop)
+        - add :  left click 
+        - reduce:  right click
+        - cancel all:  drag 
+    - menu action (android)
+        - add : tap 
+        - reduce: swipe left
+        - cancel all: swipe left + hold + release(if this is instead swipe right, dont cancel)
+    - footer
+        - price
+        - previous order
+- configuration
+    - select the menu to be moved (the menu selected will have some indication)
+    - the area between     
+
+    
