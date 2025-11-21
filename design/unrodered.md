@@ -1,1 +1,0 @@
-- managerial changes will only take effect the day after
