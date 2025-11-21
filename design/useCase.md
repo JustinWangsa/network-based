@@ -4,10 +4,10 @@ login/homepage
     - login POST to __/general/login__ body:(username,password), return whether matched or not
     - signUP POST to __/general/signup__ body:(username,password), 
     - then this leads to __::homePage__
-- a user can create a company. think of company as a group chat, the creator become the manager
+<!-- - a user can create a company. think of company as a group chat, the creator become the manager
     - the __::homePage__ has a button to create a company
-    - in the __::createCompanyPage__, fill {}
-- manager can invite other user as ==employee== or as manager
+    - in the __::createCompanyPage__, fill {} -->
+<!-- - manager can invite other user as ==employee== or as manager
     - to invite
         - for manager, in the __::companyPage__, there will be a button to create invite
         - in the __::createInvitePage__, fill {user_key, role, msg(optional) } then click submit
@@ -15,8 +15,7 @@ login/homepage
     - to accept or decine invite
         - in the __::homePage__ there will be a 
 - user can start participating in the company by
-    -  the __::homePage__ will show a list of company the user is in 
-    -  
+    -  the __::homePage__ will show a list of company the user is in  -->
 - (optional) user customization at __::homePage__'s user icon
 
 
