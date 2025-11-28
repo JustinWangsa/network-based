@@ -3,6 +3,6 @@ squatchPaper
 /client_desktop/node_modules
 /client_desktop/node_modules/*
 
-client_android
-client_browser
-server
+client_android/
+client_browser/
+server/
