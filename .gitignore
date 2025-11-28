@@ -1,6 +1,2 @@
-squatchPaper/*
-
-server/node_modules
 client_desktop
-client_android
-client_browser
+server/node_modules
