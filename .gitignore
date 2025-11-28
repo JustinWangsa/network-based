@@ -1,6 +1,7 @@
 squatchPaper/*
 
 server/node_modules
+server/node_modules/*
 client_desktop
 client_android
 client_browser
