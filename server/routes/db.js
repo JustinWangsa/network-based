@@ -1,19 +1,38 @@
 const {Router} = require('express')
 const router = Router();
+const {inspect} = require('util');
 
-const mysql = require('mysql')
-const con = mysql.createConnection({
+const sql = require('mysql')
+const con = sql.createConnection({
     host:"localhost",
     user:"root",
-    password:"root"
-});
+    password:"root",
+})
+
+function query(command){
+    return new Promise((res,rej)=>{
+        con.query(command,(err,result)=>{
+            if(err) rej(err)
+            else res(result)
+        })
+    })
+} 
 
 /* 
-user will also send their database/id s.t. server know which database to use
-
+only one database, I dont want some nightmarish maintenence
 */
 
-router.get("/login_page/submission",(req,res)=>{})
+
+
+/*  */router.get("/debug",(req,res)=>{
+    query("show databases")
+        .then((result)=>res.end(inspect(result)))
+        .catch((err)=>console.log(err))
+})
+
+router.post("/login_page/submission",(req,res)=>{
+    
+})
 router.get("/login_page/sign_up",(req,res)=>{})
 
 router.get("/transaction_page/cart_page",(req,res)=>{})
@@ -28,7 +47,7 @@ router.get("/stock_page/update_limitation",(req,res)=>{})
 router.get("/summary_page/high_level",(req,res)=>{})
 router.get("/summary_page/log",(req,res)=>{})
 
-
+module.exports = router
 
 
 // /general/log_out(client side)

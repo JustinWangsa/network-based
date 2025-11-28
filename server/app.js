@@ -7,6 +7,7 @@ var session = require('express-session')
 
 var indexRouter = require('./routes/index');//delete this
 var testingRouter = require('./routes/testing');//delete this
+var dbgRouter = require('./routes/db');//delete this
 
 
 
@@ -23,17 +24,14 @@ app.use(express.urlencoded({ extended: false }));
 // app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
+  secret:"mySecret", //bad secret
   resave:true,
   saveUninitialized:true,
-  secret:"mySecret" //bad secret
 }));//for now we will use default server-side session storage, MemoryStore //FIXME
 
 
-/*  */app.use((req,res)=>{
-  console.log(req.headers.cookie);
-  next()
-})
 app.use('/', indexRouter);
+app.use('/', dbgRouter);
 app.use('/testing', testingRouter);
 
 
@@ -58,6 +56,9 @@ module.exports = app;
 /* 
 curl localhost:3000/
 curl localhost:3000/testing
+curl localhost:3000/testing 
+  -X POST
+  -body: 
 
 
 */

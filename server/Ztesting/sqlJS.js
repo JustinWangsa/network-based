@@ -19,7 +19,7 @@ function query(command){
 // query("drop database mydb"). then((res)=>console.log(res))
 // query("show databases"). then((res)=>console.log(res))
 
-(async function hh(){
+(async function createTable(){
     query("Select Database()"). then((res)=>console.log(res))
     query("use test_db"). then((res)=>console.log(res))
     query("Select Database()"). then((res)=>console.log(res))
