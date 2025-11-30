@@ -34,7 +34,9 @@ app.use(session({
   secret:"mySecret", //bad secret
   resave:true,
   saveUninitialized:true,
-}));//for now we will use default server-side session storage, MemoryStore //FIXME
+}));
+//TODO session store (company_id)
+//for now we will use default server-side session storage, MemoryStore //FIXME
 
 
 app.use('/', indexRouter);

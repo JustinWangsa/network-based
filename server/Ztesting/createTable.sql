@@ -30,7 +30,6 @@ create table item_t(
     id      int AUTO_INCREMENT Key,
     company_id int references company_t (id),
     name    varchar(256) unique,
-    price   int,
     image   blob(65535) default null
     
 );
@@ -49,7 +48,8 @@ create table stock_t(
     date    date, -- [YYYY-MM-DD]
     item_id int references item_t (id), -- on delete restrict 
     stock   int,
-
+    price   int,
+    
     primary key (company_id,date,item_id)
 );
 

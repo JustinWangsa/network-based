@@ -1,6 +1,7 @@
 +-------------------+
 | Tables_in_test_db |
 +-------------------+
+| a                 |
 | company_t         |
 | item_t            |
 | stock_t           |
@@ -8,7 +9,7 @@
 | user_t            |
 +-------------------+
 
-company
+company_t
 +-------+---------------+------+-----+---------+----------------+
 | Field | Type          | Null | Key | Default | Extra          |
 +-------+---------------+------+-----+---------+----------------+
@@ -16,14 +17,14 @@ company
 | name  | varchar(1024) | YES  | UNI | NULL    |                |
 +-------+---------------+------+-----+---------+----------------+
 
-user 
+user_t 
 +------------+---------------+------+-----+---------+-------+
 | Field      | Type          | Null | Key | Default | Extra |
 +------------+---------------+------+-----+---------+-------+
 | company_id | int(11)       | NO   | PRI | NULL    |       |
 | isManager  | tinyint(1)    | NO   | PRI | NULL    |       |
 | name       | varchar(1024) | YES  |     | NULL    |       |
-| password   | binary(60)    | YES  |     | NULL    |       |
+| password   | binary(40)    | YES  |     | NULL    |       |
 +------------+---------------+------+-----+---------+-------+
 
 item_t
@@ -33,7 +34,6 @@ item_t
 | id         | int(11)      | NO   | PRI | NULL    | auto_increment |
 | company_id | int(11)      | YES  | MUL | NULL    |                |
 | name       | varchar(256) | YES  | UNI | NULL    |                |
-| price      | int(11)      | YES  |     | NULL    |                |
 | image      | blob         | YES  |     | NULL    |                |
 +------------+--------------+------+-----+---------+----------------+
 
@@ -55,4 +55,5 @@ stock_t
 | date       | date    | NO   | PRI | NULL    |       |
 | item_id    | int(11) | NO   | PRI | NULL    |       |
 | stock      | int(11) | YES  |     | NULL    |       |
+| price      | int(11) | YES  |     | NULL    |       |
 +------------+---------+------+-----+---------+-------+

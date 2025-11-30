@@ -25,18 +25,31 @@ use test_db;
     -- select * from user_t where name = "manager" and password = SHA1("mypw1");
 
 
+--------- /stock_page/update_stock
+    -- if item_id is null. date is
+    insert into item_t(company_id,name,image) 
+        values(company_id,name,null)
+    ; 
+    insert into stock_t 
+        values(company_id,NOW(),item_id,stock,price) 
+    ;
+        
+    -- else if item_id is valid
+    
 
 
 
-    -- select * from user_t where name = "manager" and password = SHA1("mypw1");
--- /transaction_page/cart_page
--- /transaction_page/post_transaction
--- /transaction_page/fetch_transaction_history
--- /navigation/export
--- /stock_page/update_stock
--- /stock_page/update_limitation
--- /summary_page/high_level
--- /summary_page/log
+--------- /stock_page/update_limitation
+
+
+--------- /transaction_page/cart_page
+
+
+--------- /transaction_page/post_transaction
+--------- /transaction_page/fetch_transaction_history
+--------- /navigation/export
+--------- /summary_page/high_level
+--------- /summary_page/log
 
 -- insert into company_t (name) values ("the Company");
 -- insert into user_t values (1,false,"theCompany_cashier","mypassword");
