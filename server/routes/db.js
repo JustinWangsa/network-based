@@ -7,6 +7,7 @@ const con = sql.createConnection({
     host:"localhost",
     user:"root",
     password:"root",
+    database:"test_db"
 })
 
 function query(command){

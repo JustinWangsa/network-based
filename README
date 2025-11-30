@@ -1,0 +1,14 @@
+documentation
+
+>request:
+minta foto default buat item yang belum punya foto
+
+>general:
+- host:localhost user:root, password:root, dbname:test_db
+(semua temporary)
+
+
+- to send data, use multipart/formdata as content type (the default type for FormData in js and default for fetch)
+- data is returned with application/json content type
+
+API:

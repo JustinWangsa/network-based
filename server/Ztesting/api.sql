@@ -27,16 +27,18 @@ use test_db;
 
 --------- /stock_page/update_stock
     -- if item_id is null. date is
-    insert into item_t(company_id,name,image) 
-        values(company_id,name,null)
-    ; 
-    insert into stock_t 
-        values(company_id,NOW(),item_id,stock,price) 
-    ;
+    -- insert into item_t(company_id,name,image) 
+    --     values(company_id,name,null)
+    -- ; 
+    -- insert into stock_t 
+    --     values(company_id,NOW(),item_id,stock,price) 
+    -- ;
         
     -- else if item_id is valid
     
 
+
+    
 
 
 --------- /stock_page/update_limitation

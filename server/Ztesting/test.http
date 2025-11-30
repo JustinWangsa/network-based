@@ -1,1 +1,32 @@
-GET http://localhost:3000/
+GET http://localhost:3000/testing
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryjhrDIwiMqc33gbEv^
+access
+
+------WebKitFormBoundaryjhrDIwiMqc33gbEv^
+
+
+  -H ^"Accept: */*^" ^
+  -H ^"Accept-Language: en-US,en;q=0.5^" ^
+  -H ^"Connection: keep-alive^" ^
+  -H ^"Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryjhrDIwiMqc33gbEv^" ^
+  -H ^"Origin: http://127.0.0.1:5500^" ^
+  -H ^"Referer: http://127.0.0.1:5500/^" ^
+  -H ^"Sec-Fetch-Dest: empty^" ^
+  -H ^"Sec-Fetch-Mode: cors^" ^
+  -H ^"Sec-Fetch-Site: cross-site^" ^
+  -H ^"Sec-GPC: 1^" ^
+  -H ^"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36^" ^
+  -H ^"sec-ch-ua: ^\^"Chromium^\^";v=^\^"142^\^", ^\^"Brave^\^";v=^\^"142^\^", ^\^"Not_A Brand^\^";v=^\^"99^\^"^" ^
+  -H ^"sec-ch-ua-mobile: ?0^" ^
+  -H ^"sec-ch-ua-platform: ^\^"Windows^\^"^" ^
+  --data-raw ^"
+
+Content-Disposition: form-data; name=^\^"a^\^"^
+
+^
+
+12^
+
+------WebKitFormBoundaryjhrDIwiMqc33gbEv--^
+
+^"
