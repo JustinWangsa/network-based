@@ -3,11 +3,17 @@ var express = require('express');
 var path = require('path');
 // var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var session = require('express-session')
 
-var indexRouter = require('./routes/index');//delete this
-var testingRouter = require('./routes/testing');//delete this
-var dbRouter = require('./routes/db');//delete this
+
+//added
+var session = require('express-session');
+var fileUpload = require('express-fileupload');
+
+
+//router
+var indexRouter = require('./routes/index');
+var testingRouter = require('./routes/testing');
+var dbRouter = require('./routes/db');
 
 
 
@@ -19,8 +25,9 @@ app.set('view engine', 'pug');
 
 
 app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(fileUpload());// req.files
+app.use(express.json());//"application/json" -> req.body
+app.use(express.urlencoded({ extended: false }));//application/x-www-form-urlencoded -> req.body
 // app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
