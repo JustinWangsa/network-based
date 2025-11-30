@@ -1,0 +1,58 @@
++-------------------+
+| Tables_in_test_db |
++-------------------+
+| company_t         |
+| item_t            |
+| stock_t           |
+| transaction_t     |
+| user_t            |
++-------------------+
+
+company
++-------+---------------+------+-----+---------+----------------+
+| Field | Type          | Null | Key | Default | Extra          |
++-------+---------------+------+-----+---------+----------------+
+| id    | int(11)       | NO   | PRI | NULL    | auto_increment |
+| name  | varchar(1024) | YES  | UNI | NULL    |                |
++-------+---------------+------+-----+---------+----------------+
+
+user 
++------------+---------------+------+-----+---------+-------+
+| Field      | Type          | Null | Key | Default | Extra |
++------------+---------------+------+-----+---------+-------+
+| company_id | int(11)       | NO   | PRI | NULL    |       |
+| isManager  | tinyint(1)    | NO   | PRI | NULL    |       |
+| name       | varchar(1024) | YES  |     | NULL    |       |
+| password   | binary(60)    | YES  |     | NULL    |       |
++------------+---------------+------+-----+---------+-------+
+
+item_t
++------------+--------------+------+-----+---------+----------------+
+| Field      | Type         | Null | Key | Default | Extra          |
++------------+--------------+------+-----+---------+----------------+
+| id         | int(11)      | NO   | PRI | NULL    | auto_increment |
+| company_id | int(11)      | YES  | MUL | NULL    |                |
+| name       | varchar(256) | YES  | UNI | NULL    |                |
+| price      | int(11)      | YES  |     | NULL    |                |
+| image      | blob         | YES  |     | NULL    |                |
++------------+--------------+------+-----+---------+----------------+
+
+transaction_t
++------------+----------+------+-----+---------+-------+
+| Field      | Type     | Null | Key | Default | Extra |
++------------+----------+------+-----+---------+-------+
+| company_id | int(11)  | NO   | PRI | NULL    |       |
+| time       | datetime | NO   | PRI | NULL    |       |
+| item_id    | int(11)  | NO   | PRI | NULL    |       |
+| count      | int(11)  | YES  |     | NULL    |       |
++------------+----------+------+-----+---------+-------+
+
+stock_t
++------------+---------+------+-----+---------+-------+
+| Field      | Type    | Null | Key | Default | Extra |
++------------+---------+------+-----+---------+-------+
+| company_id | int(11) | NO   | PRI | NULL    |       |
+| date       | date    | NO   | PRI | NULL    |       |
+| item_id    | int(11) | NO   | PRI | NULL    |       |
+| stock      | int(11) | YES  |     | NULL    |       |
++------------+---------+------+-----+---------+-------+

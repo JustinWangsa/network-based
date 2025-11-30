@@ -7,7 +7,7 @@ var session = require('express-session')
 
 var indexRouter = require('./routes/index');//delete this
 var testingRouter = require('./routes/testing');//delete this
-var dbgRouter = require('./routes/db');//delete this
+var dbRouter = require('./routes/db');//delete this
 
 
 
@@ -31,7 +31,7 @@ app.use(session({
 
 
 app.use('/', indexRouter);
-app.use('/', dbgRouter);
+app.use('/', dbRouter);
 app.use('/testing', testingRouter);
 
 
