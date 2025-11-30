@@ -16,6 +16,6 @@ function createWindow(){
 
 app.on('ready',()=>{
     let window = createWindow()
-    window.loadFile("test/test.html")
-
+    // window.loadFile("test/test.html")
+    window.loadURL("http://localhost:3000/")//require the http://
 })
