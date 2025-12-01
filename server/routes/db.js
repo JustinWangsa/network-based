@@ -91,6 +91,27 @@ router.get('/admin/createTable',async (req,res)=>{
     `,_E)
 })
 
+//result: current companyName or null
+router.get('/admin/WhoAmI',async (req,res)=>{
+    // const _E = makeErrHandler(5,res,"Table Created Successfully")
+    
+    let company_id = req.session?.company_id?.toString();
+    let isManager = req.session?.isManager?.toString();
+    con.query('select name from company_t where id = ?'
+        ,company_id,(err,result)=>{
+        if(err){
+            console.log(`unknown user`);
+            res.end();
+        } else {
+            console.log(`I am ${result[0].name}, ${req.session.isManager?"manager":"cashier"}`);
+            res.end(result[0].name);
+        }
+    })
+
+})
+
+
+
 //result: if(true) 1 else null
 router.post('/login_page/sign_up',async (req,res)=>{
     const {
@@ -132,6 +153,7 @@ router.post('/login_page/sign_up',async (req,res)=>{
     
 })
 
+//result: if(true) 1 else null
 router.post("/login_page/log_in",(req,res)=>{
     const {
         password,
@@ -141,27 +163,44 @@ router.post("/login_page/log_in",(req,res)=>{
 
 
     con.query(`
-        select * from user_t where name = ? and password = SHA1(?)
+        select 
+            U.company_id,
+            U.isManager,
+            U.name as user_name,
+            U.password,
+            C.name as company_name
+        from user_t U join company_t C on U.company_id = C.id
+        where U.name = ? and U.password = SHA1(?)
     `,[name,password]
     , (err,result)=>{
         if(err){
             console.log(err); 
             res.end();
         } else {
-            let company_id = result[0]?.company_id?.toString();
-            console.log("company id = ",company_id);
-            res.end(company_id);
+            req.session.company_id = result[0]?.company_id;
+            req.session.isManager = result[0]?.isManager;
+
+            console.log("log in as ",result);
+            res.end("1");
         }
     })
     
 })
 
+
+
+//result: if(true) 1 else null
 router.post("/stock_page/update_stock",(req,res)=>{//TODO
     const {
-        password,
+        item_id,
+        company_id,
         name,
+        image,
+        stock,
+        price
     } = req.body;
-    // result: company_id | null
+    // result: 1 | null
+
 
 
     /* 

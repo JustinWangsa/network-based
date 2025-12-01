@@ -37,8 +37,19 @@ function dump(err,result){
 //     name:"LH_mg",
 //     password:"password1",
 // })
-let a = []
-console.log(a[0]);
+// let a = []
+// console.log(a[0]);
+con.query(`
+select 
+    U.company_id,
+    U.isManager,
+    U.name as user_name,
+    U.password,
+    C.name as company_name
+from user_t U join company_t C on U.company_id = C.id 
+where U.name="lockheed_cs"
+`,dump);
+
 function testing(req_body){
     
     const {
