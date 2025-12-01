@@ -11,6 +11,8 @@ const con = sql.createConnection({
 })
 
 
+
+
 router.all('/sendImg',(req,res)=>{
     con.query("insert into img(data) values(?)",req?.files?.profile?.data,(err,res)=>{//insert binary data
         if(err)console.log(err);
@@ -47,9 +49,11 @@ router.all('/getImg',(req,res)=>{
 
 router.all('/', (req,res)=>{
     console.log({"a":1,"b":2});
-    console.log(req.headers);
-    console.log("---data:",req.body);
+    console.log("---header:",req.headers);
+    console.log("---data:",req?.body);
+    console.log("---filedata:",req?.files?.myfile?.data);
 
+    res.end();
 
    
     

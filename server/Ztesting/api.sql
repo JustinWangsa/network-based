@@ -36,6 +36,7 @@ use test_db;
         
     -- else if item_id is valid
     
+    -- send in the form of json {id:{property:newprop}...,noId:[{}]}
 
 
     

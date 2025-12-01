@@ -1,6 +1,5 @@
 const {Router} = require('express')
 const router = Router();
-const {inspect} = require('util');
 
 const sql = require('mysql')
 const con = sql.createConnection({
@@ -10,43 +9,60 @@ const con = sql.createConnection({
     database:"test_db"
 })
 
-function query(command){
-    return new Promise((res,rej)=>{
-        con.query(command,(err,result)=>{
-            if(err) rej(err)
-            else res(result)
-        })
-    })
-} 
-
-/* 
-only one database, I dont want some nightmarish maintenence
-*/
 
 
+router.post('/login_page/sign_up',async (req,res)=>{
+    const {
+        companyName,
+        managerName,
+        managerPassword,
+        cashierName,
+        cashierPassword,
+    } = req.body;
 
-/*  */router.get("/debug",(req,res)=>{
-    query("show databases")
-        .then((result)=>res.end(inspect(result)))
-        .catch((err)=>console.log(err))
-})
+    const apiName = '/login_page/sign_up';
+    let success = 0;
+    const target = 3;
+    function errHandler(err,result){
+        if(err){
+            console.log(err);
+            success = success<0?success-1:-1;
+        } else success = success<0?success:success+1;
+        switch(success){
+            case target: res.end(`${apiName} success`);break;
+            case -1: res.end(`${apiName} fail`);break;
+        }
+    }
 
-router.post("/login_page/submission",(req,res)=>{
+    con.query(`
+        insert into company_t (name) values (?)
+    `,companyName
+    ,errHandler)
+
+    con.query(`
+        insert into user_t set
+            company_id = (
+                select id from company_t where name = ?
+            ),
+            isManager = true,
+            name = ?,
+            password = SHA1(?)
+    `,[companyName, managerName, managerPassword]
+    ,errHandler)
+
+    con.query(`
+        insert into user_t set
+            company_id = (
+                select id from company_t where name = ?
+            ),
+            isManager = false,
+            name = ?,
+            password = SHA1(?)
+    `,[companyName, cashierName, cashierPassword]
+    ,errHandler)
     
 })
-router.get("/login_page/sign_up",(req,res)=>{})
 
-router.get("/transaction_page/cart_page",(req,res)=>{})
-router.get("/transaction_page/post_transaction",(req,res)=>{})
-router.get("/transaction_page/fetch_transaction_history",(req,res)=>{})
-
-router.get("/navigation/export",(req,res)=>{})
-
-router.get("/stock_page/update_stock",(req,res)=>{})
-router.get("/stock_page/update_limitation",(req,res)=>{})
-
-router.get("/summary_page/high_level",(req,res)=>{})
-router.get("/summary_page/log",(req,res)=>{})
 
 module.exports = router
 

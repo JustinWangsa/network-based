@@ -16,7 +16,8 @@
         document.getElementById('a').addEventListener("submit",function(e){
             e.preventDefault();
 
-            let formbody = new FormData (e.target);
+            let formbody = new FormData(e.target);
+            
             console.log(Array.from(formbody.entries()));
             fetch("http://localhost:3000/testing",{
                 method:"POST",
@@ -28,6 +29,20 @@
                 document.body.append(img);
                 console.log(txt);
             })
+
+            // img form
+            // let formbody = new FormData (e.target);
+            // console.log(Array.from(formbody.entries()));
+            // fetch("http://localhost:3000/testing",{
+            //     method:"POST",
+            //     body:formbody,
+            // }).then(val => val.text())
+            // .then(txt => {
+            //     let img = document.createElement('img');
+            //     img.src = "data:image;base64,"+txt;
+            //     document.body.append(img);
+            //     console.log(txt);
+            // })
         })
     </script>
 </body>
