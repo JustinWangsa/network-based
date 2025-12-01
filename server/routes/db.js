@@ -8,9 +8,90 @@ const con = sql.createConnection({
     password:"root",
     database:"test_db"
 })
+function makeErrHandler(taskCount,res,successMsg=""){
+    const task = taskCount;
+    let completed = 0;
+    let fail = 0;
+    return function errHandler(err){
+        completed++;
+        if(err){
+            fail++;
+            console.log(err)
+        }
 
+        if(completed == task){
+            if(fail == 0) {
+                console.log(successMsg);
+                res.end("1")
+            }
+            else res.end();
+        }
+    }
+}
 
+//result: if(true) 1 else null
+router.get('/admin/dropTable',async (req,res)=>{
+    const _E = makeErrHandler(5,res,"Table Drop Successfully")
+    con.query("drop table if exists stock_t",_E)
+    con.query("drop table if exists transaction_t",_E)
+    con.query("drop table if exists user_t",_E)
+    con.query("drop table if exists item_t",_E)
+    con.query("drop table if exists company_t",_E)
+    
+})
 
+//result: if(true) 1 else null
+router.get('/admin/createTable',async (req,res)=>{
+    const _E = makeErrHandler(5,res,"Table Created Successfully")
+
+    con.query(`
+        create table company_t(
+            id      int AUTO_INCREMENT key,
+            name    varchar(1024) unique
+        );    
+    `,_E)
+    con.query(`
+        create table user_t(
+            company_id  int references company_t (id),
+            isManager   bool ,
+            name        varchar(1024) , -- suppose to be unique, but cause virtual bug
+            password    binary(40), -- sha1 is 160 bit, but this is hexed so 320 bit
+            primary key (company_id,isManager)
+        );
+    `,_E)
+    con.query(`
+        create table item_t(
+            id      int AUTO_INCREMENT Key,
+            company_id int references company_t (id),
+            name    varchar(256) unique,
+            image   blob(65535) default null
+            
+        );
+    `,_E)
+    con.query(`
+        create table transaction_t(
+            company_id int references company_t (id),
+            time    datetime, -- [YYYY-MM-DD hh:mm:ss]
+            item_id int references item_t (id), -- on delete restrict
+            count   int,
+
+            primary key (company_id,time,item_id)
+        );
+    `,_E)
+    con.query(`
+        create table stock_t(
+            company_id int references company_t (id),
+            date    date, -- [YYYY-MM-DD]
+            item_id int references item_t (id), -- on delete restrict 
+            stock   int,
+            price   int,
+            
+            primary key (company_id,date,item_id)
+        );
+    `,_E)
+})
+
+//result: if(true) 1 else null
 router.post('/login_page/sign_up',async (req,res)=>{
     const {
         companyName,
@@ -20,24 +101,12 @@ router.post('/login_page/sign_up',async (req,res)=>{
         cashierPassword,
     } = req.body;
 
-    const apiName = '/login_page/sign_up';
-    let success = 0;
-    const target = 3;
-    function errHandler(err,result){
-        if(err){
-            console.log(err);
-            success = success<0?success-1:-1;
-        } else success = success<0?success:success+1;
-        switch(success){
-            case target: res.end(`${apiName} success`);break;
-            case -1: res.end(`${apiName} fail`);break;
-        }
-    }
+    const _E = makeErrHandler(3, res, "new company added");
 
     con.query(`
         insert into company_t (name) values (?)
     `,companyName
-    ,errHandler)
+    ,_E)
 
     con.query(`
         insert into user_t set
@@ -48,7 +117,7 @@ router.post('/login_page/sign_up',async (req,res)=>{
             name = ?,
             password = SHA1(?)
     `,[companyName, managerName, managerPassword]
-    ,errHandler)
+    ,_E)
 
     con.query(`
         insert into user_t set
@@ -59,10 +128,71 @@ router.post('/login_page/sign_up',async (req,res)=>{
             name = ?,
             password = SHA1(?)
     `,[companyName, cashierName, cashierPassword]
-    ,errHandler)
+    ,_E)
     
 })
 
+router.post("/login_page/log_in",(req,res)=>{
+    const {
+        password,
+        name,
+    } = req.body;
+    // result: company_id | null
+
+
+    con.query(`
+        select * from user_t where name = ? and password = SHA1(?)
+    `,[name,password]
+    , (err,result)=>{
+        if(err){
+            console.log(err); 
+            res.end();
+        } else {
+            let company_id = result[0]?.company_id?.toString();
+            console.log("company id = ",company_id);
+            res.end(company_id);
+        }
+    })
+    
+})
+
+router.post("/stock_page/update_stock",(req,res)=>{//TODO
+    const {
+        password,
+        name,
+    } = req.body;
+    // result: company_id | null
+
+
+    /* 
+    /stock_page/update_stock
+    if item_id is null. date is
+    insert into item_t(company_id,name,image) 
+        values(company_id,name,null)
+    ; 
+    insert into stock_t 
+        values(company_id,NOW(),item_id,stock,price) 
+    ;
+        
+    else if item_id is valid
+    
+    send in the form of json {id:{property:newprop}...,noId:[{}]}
+    */
+    con.query(`
+        select * from user_t where name = ? and password = SHA1(?)
+    `,[name,password]
+    , (err,result)=>{
+        if(err){
+            console.log(err); 
+            res.end();
+        } else {
+            let company_id = result[0]?.company_id?.toString();
+            console.log("company id = ",company_id);
+            res.end(company_id);
+        }
+    })
+    
+})
 
 module.exports = router
 

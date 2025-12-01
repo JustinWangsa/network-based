@@ -24,8 +24,8 @@ function dump(err,result){
 // con.query("select * from user_t where password = sha1('password1')",dump)
 
 //adding
-con.query("delete from user_t"      ,dump)
-con.query("delete from company_t"   ,dump)
+// con.query("delete from user_t"      ,dump)
+// con.query("delete from company_t"   ,dump)
 // testing({
 //     companyName:"lockheed",
 //     managerName:"LH_mg",
@@ -33,37 +33,35 @@ con.query("delete from company_t"   ,dump)
 //     cashierName:"LH_csh",
 //     cashierPassword:"password2",
 // })
+// testing({
+//     name:"LH_mg",
+//     password:"password1",
+// })
+let a = []
+console.log(a[0]);
 function testing(req_body){
+    
     const {
-        Password,
-        Name,
+        password,
+        name,
     } = req_body;
+    // result: company_id | null
 
 
     con.query(`
-        insert into company_t (name) values (?)
-    `,companyName
-    , dump)
-    con.query(`
-        insert into user_t set
-            company_id = (
-                select id from company_t where name = ?
-            ),
-            isManager = true,
-            name = ?,
-            password = SHA1(?)
-    `,[companyName, managerName, managerPassword]
-    ,dump)
-    con.query(`
-        insert into user_t set
-            company_id = (
-                select id from company_t where name = ?
-            ),
-            isManager = false,
-            name = ?,
-            password = SHA1(?)
-    `,[companyName, cashierName, cashierPassword]
-    ,dump)
+        select * from user_t where name = ? and password = SHA1(?)
+    `,[name,password]
+    , (err,result)=>{
+        if(err){
+            console.log(err); 
+            // res.end();
+        } else {
+            let {company_id} = result[0];
+            console.log(company_id);
+            // res.end(company_id);
+        }
+    })
+    
 
 }
 
