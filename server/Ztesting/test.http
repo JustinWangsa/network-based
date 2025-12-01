@@ -53,7 +53,19 @@ lockheed_cs
 --flasfls--
 #end
 
+###testing
+POST http://localhost:3000/testing HTTP/1.1
+Content-Type: multipart/form-data; boundary=blablabla
 
+--blablabla
+Content-Disposition: form-data; name="hhh"
+
+
+--blablabla
+Content-Disposition: form-data; name="aaa"
+
+12
+--blablabla--
 
 # POST http://localhost:3000/testing HTTP/1.1
 # Content-Type: multipart/form-data; boundary=----hhhh

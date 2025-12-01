@@ -188,20 +188,49 @@ router.post("/login_page/log_in",(req,res)=>{
 })
 
 
-
+// need to sign in first
+//one per item
 //result: if(true) 1 else null
 router.post("/stock_page/update_stock",(req,res)=>{//TODO
-    const {
-        item_id,
-        company_id,
+    
+    const { //field can be null, apart 
+        item_id, 
+        // company_id,//from session
         name,
         image,
-        stock,
-        price
+        stock,//must be the current value
+        price//must be the current value
     } = req.body;
-    // result: 1 | null
+    const company_id = req.session.company_id;
+    const _E = makeErrHandler(1,res,`inserted ${name}`);
+    
+    if(item_id == ''){//new entry
+        let insertCmd = "insert into item_t"
 
+        con.query(`
+            insert into item_t set 
+                company_id = ?,
+                name = ?,
+                image = ? 
+        `,[company_id,name,image]
+        ,_E)
+        con.query(`
+            insert into stock_t set
+                company_id = ?,
+                date
+                item_id
+                stock
+                price
+        `,_E)
 
+    } else {//update
+        con.query(`
+            insert into 
+        `,[]
+        ,_E)
+    };
+
+    
 
     /* 
     /stock_page/update_stock
