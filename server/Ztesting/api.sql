@@ -8,13 +8,37 @@ desc stock_t;
 desc transaction_t;
 desc user_t;
 
-select "---------------data Dump-------------" \G;
-select * from company_t;
-select * from user_t;
-select * from item_t;
-select * from transaction_t;
-select * from stock_t;
 
+select "---------------data Dump-------------" \G;
+select 
+    id as _company_id,
+    name
+from company_t;
+select
+    name as _user_name,
+    company_id,
+    isManager,
+    LEFT(password,10)
+from user_t;
+select 
+    id as _item_id,
+    company_id,
+    name,
+    LEFT(Hex(image),20)
+from item_t;
+select
+    time as _transaction_time,
+    company_id,
+    item_id,
+    count
+from transaction_t;
+select
+    time as _stock_time,
+    company_id,
+    item_id,
+    stock,
+    price
+from stock_t;
     
 
 

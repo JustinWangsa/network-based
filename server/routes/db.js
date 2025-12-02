@@ -1,4 +1,4 @@
-const {Router} = require('express')
+const {Router, response} = require('express')
 const router = Router();
 
 const sql = require('mysql')
@@ -8,6 +8,10 @@ const con = sql.createConnection({
     password:"root",
     database:"test_db"
 })
+const Response = {
+    success:"success",
+    fail:"fail"
+}
 function makeErrHandler(taskCount,res,successMsg=""){
     const task = taskCount;
     let completed = 0;
@@ -22,14 +26,33 @@ function makeErrHandler(taskCount,res,successMsg=""){
         if(completed == task){
             if(fail == 0) {
                 console.log(successMsg);
-                res.end("1")
+                res.end(Response.success)
             }
-            else res.end();
+            else res.end(Response.fail);
         }
     }
 }
 
-//result: if(true) 1 else null
+
+/**
+ * 
+ * @param {string} qry 
+ * @param {*} value 
+ * @returns {Promise} 
+ */
+function query(qry,value){
+    return new Promise((res,rej)=>{
+        con.query(qry,value,(err,result)=>{
+            if(err)rej(err)
+            else res(result)
+        })
+    })
+}
+
+//TODO convert all con.query into query
+
+
+//return: default
 router.get('/admin/dropTable',async (req,res)=>{
     const _E = makeErrHandler(5,res,"Table Drop Successfully")
     con.query("drop table if exists stock_t",_E)
@@ -40,7 +63,7 @@ router.get('/admin/dropTable',async (req,res)=>{
     
 })
 
-//result: if(true) 1 else null
+//return: default
 router.get('/admin/createTable',async (req,res)=>{
     const _E = makeErrHandler(5,res,"Table Created Successfully")
 
@@ -64,7 +87,7 @@ router.get('/admin/createTable',async (req,res)=>{
             id      int AUTO_INCREMENT Key,
             company_id int references company_t (id),
             name    varchar(256) unique,
-            image   blob(65535) default null
+            image   longblob default null
             
         );
     `,_E)
@@ -81,27 +104,28 @@ router.get('/admin/createTable',async (req,res)=>{
     con.query(`
         create table stock_t(
             company_id int references company_t (id),
-            date    date, -- [YYYY-MM-DD]
+            time    datetime, -- [YYYY-MM-DD hh:mm:ss]
             item_id int references item_t (id), -- on delete restrict 
             stock   int,
             price   int,
             
-            primary key (company_id,date,item_id)
+            primary key (company_id,time,item_id)
         );
     `,_E)
 })
 
-//result: current companyName or null
+//result: current companyName 
 router.get('/admin/WhoAmI',async (req,res)=>{
-    // const _E = makeErrHandler(5,res,"Table Created Successfully")
     
     let company_id = req.session?.company_id?.toString();
     let isManager = req.session?.isManager?.toString();
+    console.log({company_id,isManager});
+
     con.query('select name from company_t where id = ?'
         ,company_id,(err,result)=>{
         if(err){
             console.log(`unknown user`);
-            res.end();
+            res.end(Response.fail);
         } else {
             console.log(`I am ${result[0].name}, ${req.session.isManager?"manager":"cashier"}`);
             res.end(result[0].name);
@@ -110,9 +134,7 @@ router.get('/admin/WhoAmI',async (req,res)=>{
 
 })
 
-
-
-//result: if(true) 1 else null
+//result: default
 router.post('/login_page/sign_up',async (req,res)=>{
     const {
         companyName,
@@ -153,7 +175,13 @@ router.post('/login_page/sign_up',async (req,res)=>{
     
 })
 
-//result: if(true) 1 else null
+/* 
+input:{
+    name, 
+    password,
+}
+result: isManager(1 or 0) 
+*/
 router.post("/login_page/log_in",(req,res)=>{
     const {
         password,
@@ -175,90 +203,165 @@ router.post("/login_page/log_in",(req,res)=>{
     , (err,result)=>{
         if(err){
             console.log(err); 
-            res.end();
+            res.end(Response.fail);
         } else {
             req.session.company_id = result[0]?.company_id;
             req.session.isManager = result[0]?.isManager;
 
             console.log("log in as ",result);
-            res.end("1");
+            if(result.length == 0 )res.end(Response.fail);
+            else res.end(result[0]?.isManager?.toString());
         }
     })
     
 })
 
+//result: default
+router.all("/login_page/log_out",(req,res)=>{
+    delete req.session.company_id;  
+    delete req.session.isManager;
+    console.log({
+        company_id:req.session.company_id, 
+        isManager:req.session.isManager
+    });
 
-// need to sign in first
-//one per item
-//result: if(true) 1 else null
-router.post("/stock_page/update_stock",(req,res)=>{//TODO
+    res.end(Response.success);
+})
+
+/* 
+- prerequisite: /login_page/log_in
+- one per item. 
+- input:{
+    - item_id. null means its a new item
+    - name. -can be null if item_id is not null. Needs to be unique
+    - image. -can be null
+    - stock. 
+    - price. (make sure stock and price are either both empty or both filled)
+}
+result: if(true) item_id else null
+*/
+router.post("/stock_page/update_stock",async (req,res)=>{//TODO
     
-    const { //field can be null, apart 
-        item_id, 
+    let { 
         // company_id,//from session
+        item_id, //null meant its a new item
         name,
-        image,
-        stock,//must be the current value
-        price//must be the current value
+        stock,
+        price//stock and price must be both empty or valued
     } = req.body;
-    const company_id = req.session.company_id;
-    const _E = makeErrHandler(1,res,`inserted ${name}`);
+    const image = req.files?.icon?.data ?? '';
+    const company_id = req.session.company_id?? '';
+
+    console.log({
+        company_id,
+        item_id,
+        name,
+        image:image.toString('base64').substring(0,10),
+        stock,
+        price,
+    });
+
+    if(company_id === ''){
+        console.log("cant insert, company id is null");
+        res.end(Response.fail);
+        return;
+    }
     
     if(item_id == ''){//new entry
-        let insertCmd = "insert into item_t"
+        console.log("item has no id");
+        try{ //
+            let theQuery = sql.format(`
+                insert into item_t set 
+                    company_id = ?,
+                    name = ?,
+                    image = ? 
+            `,[company_id,name,image]);
+            console.log(theQuery);
+            let okPacket = await query(theQuery);
 
-        con.query(`
-            insert into item_t set 
-                company_id = ?,
-                name = ?,
-                image = ? 
-        `,[company_id,name,image]
-        ,_E)
-        con.query(`
-            insert into stock_t set
-                company_id = ?,
-                date
-                item_id
-                stock
-                price
-        `,_E)
+            item_id = okPacket.insertId;
+            
+            theQuery = sql.format(`
+                insert into stock_t set 
+                    company_id = ?,
+                    time = NOW(),
+                    item_id = ?,
+                    stock = ?,
+                    price = ?   
+            `,[
+                company_id,
+                item_id,
+                Number(stock),
+                Number(price)
+            ]);
+            console.log(theQuery);
+            await query(theQuery);
+
+
+            res.end(item_id.toString());
+        } catch(e){
+            console.log(e)
+            res.end(Response.fail);
+        }
+
 
     } else {//update
-        con.query(`
-            insert into 
-        `,[]
-        ,_E)
+        //for item_t field, if null then dont update
+        try{
+            let changes, input;
+            function optAppend(label,value){
+                if(value != ''){
+                    changes.push(`${label} = ?`);
+                    input.push(value);
+                }
+            }
+            
+            //item_t update
+            input = [];
+            changes = [];
+            optAppend("name",name);
+            optAppend("image",image);
+            
+            if(changes != ''){
+                const theQuery = sql.format(`
+                    update item_t set 
+                        ${changes.join(',')}
+                    where 
+                        company_id = ? and 
+                        id = ?
+                `,[...input,company_id,item_id]) 
+                
+                console.log(theQuery);
+                await query(theQuery); 
+            } else console.log("item_t unchanged");
+
+            //stock_t update
+            if(stock != '' && price != ''){
+                const theQuery = sql.format(`
+                    insert into stock_t set 
+                        company_id = ?
+                        ,time = NOW()
+                        ,item_id = ?
+                        ,stock = ?
+                        ,price = ?    
+                `,[company_id,item_id,stock,price])
+                
+                console.log(theQuery);
+                await query(theQuery);
+            } else console.log("stock_t unchanged");
+    
+            res.end(item_id.toString())
+           
+        } catch(e){
+            console.log(e)
+            res.end(Response.fail);
+        }
+
     };
 
     
 
-    /* 
-    /stock_page/update_stock
-    if item_id is null. date is
-    insert into item_t(company_id,name,image) 
-        values(company_id,name,null)
-    ; 
-    insert into stock_t 
-        values(company_id,NOW(),item_id,stock,price) 
-    ;
-        
-    else if item_id is valid
-    
-    send in the form of json {id:{property:newprop}...,noId:[{}]}
-    */
-    con.query(`
-        select * from user_t where name = ? and password = SHA1(?)
-    `,[name,password]
-    , (err,result)=>{
-        if(err){
-            console.log(err); 
-            res.end();
-        } else {
-            let company_id = result[0]?.company_id?.toString();
-            console.log("company id = ",company_id);
-            res.end(company_id);
-        }
-    })
+ 
     
 })
 

@@ -21,49 +21,9 @@ function dump(err,result){
 }
 
 
-// con.query("select * from user_t where password = sha1('password1')",dump)
+console.log([1,2,3,...[3,4,5]]);
 
-//adding
-// con.query("delete from user_t"      ,dump)
-// con.query("delete from company_t"   ,dump)
-// testing({
-//     companyName:"lockheed",
-//     managerName:"LH_mg",
-//     managerPassword:"password1",
-//     cashierName:"LH_csh",
-//     cashierPassword:"password2",
-// })
-// testing({
-//     name:"LH_mg",
-//     password:"password1",
-// })
-// let a = []
-// console.log(a[0]);
-// con.query(`
-// select 
-//     U.company_id,
-//     U.isManager,
-//     U.name as user_name,
-//     U.password,
-//     C.name as company_name
-// from user_t U join company_t C on U.company_id = C.id 
-// where U.name="lockheed_cs"
-// `,dump);
 
-// con.query('select NOW()',dump)
-
-// con.query(`
-//     insert into item_t set 
-//         company_id = ?,
-//         name = ?,
-//         image = ?    
-// `,[1,'','']
-// ,dump);
-
-con.query(`
-    select * from item_t; 
-`
-,dump);
 
 
 function testing(req_body){
