@@ -217,7 +217,7 @@ router.post("/login_page/log_in",(req,res)=>{
 })
 
 //result: default
-router.all("/login_page/log_out",(req,res)=>{
+router.get("/login_page/log_out",(req,res)=>{
     delete req.session.company_id;  
     delete req.session.isManager;
     console.log({
