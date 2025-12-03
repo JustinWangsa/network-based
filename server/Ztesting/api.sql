@@ -24,7 +24,7 @@ select
     id as _item_id,
     company_id,
     name,
-    stock,
+    currentStock,
     LEFT(Hex(image),20)
 from item_t;
 select
@@ -38,8 +38,9 @@ select
     time as _price_time,
     company_id,
     item_id,
-    price
-from price_t;
+    price,
+    stock
+from stock_t;
     
 
 

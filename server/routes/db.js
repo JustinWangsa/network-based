@@ -163,75 +163,72 @@ router.post('/login_page/sign_up',async (req,res)=>{
         cashierPassword,
     } = req.body;
 
-    const _E = makeErrHandler(3, res, "new company added");
-
-    con.query(`
-        insert into company_t (name) values (?)
-    `,companyName
-    ,_E)
-
-    con.query(`
-        insert into user_t set
-            company_id = (
-                select id from company_t where name = ?
-            ),
-            isManager = true,
-            name = ?,
-            password = SHA1(?)
-    `,[companyName, managerName, managerPassword]
-    ,_E)
-
-    con.query(`
-        insert into user_t set
-            company_id = (
-                select id from company_t where name = ?
-            ),
-            isManager = false,
-            name = ?,
-            password = SHA1(?)
-    `,[companyName, cashierName, cashierPassword]
-    ,_E)
+    
+    try {
+        await query(`
+            insert into company_t (name) values (?)
+        `,companyName)
+    
+        await query(`
+            insert into user_t set
+                company_id = (
+                    select id from company_t where name = ?
+                ),
+                isManager = true,
+                name = ?,
+                password = SHA1(?)
+        `,[companyName, managerName, managerPassword])
+    
+        await query(`
+            insert into user_t set
+                company_id = (
+                    select id from company_t where name = ?
+                ),
+                isManager = false,
+                name = ?,
+                password = SHA1(?)
+        `,[companyName, cashierName, cashierPassword])
+        
+        console.log('------new company created');
+        res.end(Response.success)
+    } catch (error) {
+        console.log(error);
+        res.end(Response.fail);
+    }
+    
     
 })
 
-/* 
-input:{
-    name, 
-    password,
-}
-result: isManager(1 or 0) 
-*/
-router.post("/login_page/log_in",(req,res)=>{
+//result: isManager(1|0) 
+router.post("/login_page/log_in",async (req,res)=>{
     const {
         password,
         name,
     } = req.body;
-    // result: company_id | null
 
+    try {
+        let result = await query(`
+            select 
+                U.company_id,
+                U.isManager,
+                U.name as user_name,
+                U.password,
+                C.name as company_name
+            from user_t U join company_t C on U.company_id = C.id
+            where U.name = ? and U.password = SHA1(?)
+        `,[name,password])
 
-    con.query(`
-        select 
-            U.company_id,
-            U.isManager,
-            U.name as user_name,
-            U.password,
-            C.name as company_name
-        from user_t U join company_t C on U.company_id = C.id
-        where U.name = ? and U.password = SHA1(?)
-    `,[name,password]
-    , (err,result)=>{
-        if(err){
-            console.log(err); 
-            res.end(Response.fail);
-        } else {
-            req.session.company_id = result[0]?.company_id;
-            req.session.isManager = result[0]?.isManager;
+        req.session.company_id = result[0]?.company_id;
+        req.session.isManager = result[0]?.isManager;
 
-            console.log("log in as ",result);
-            if(result.length == 0 )res.end(Response.fail);
-            else res.end(result[0]?.isManager?.toString());
-        }
-    })
+        console.log("log in as ",result);
+        if(result.length == 0 )res.end(Response.fail);
+        else res.end(result[0]?.isManager?.toString());
+
+    } catch (error) {
+        console.log(err); 
+        res.end(Response.fail);
+    }
     
 })
 
