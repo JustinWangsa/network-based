@@ -1,0 +1,64 @@
+### login_page/log_in -- correct
+POST  http://localhost:3000/login_page/log_in HTTP/1.1/
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="password"
+
+lockheed_cs
+--bababa
+Content-Disposition: form-data; name="name"
+
+lockheed_cs
+--bababa--
+
+
+### /stock_page/update_item 
+POST  http://localhost:3000/stock_page/update_item HTTP/1.1/
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="item_id"
+
+3
+--bababa
+Content-Disposition: form-data; name="name"
+
+hhh
+--bababa
+Content-Disposition: form-data; name="icon"; filename="bbb.png"
+Content-Type: image/png
+
+
+--bababa
+Content-Disposition: form-data; name="stock"
+
+1
+--bababa
+Content-Disposition: form-data; name="price"
+
+1111
+--bababa--
+
+### /stock_page/new_item 
+POST  http://localhost:3000/stock_page/new_item HTTP/1.1/
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="name"
+
+slkdaw
+--bababa
+Content-Disposition: form-data; name="icon"; filename="bbb.png"
+Content-Type: image/png
+
+< ./sampleImg.png
+--bababa
+Content-Disposition: form-data; name="stock"
+
+12
+--bababa
+Content-Disposition: form-data; name="price"
+
+56
+--bababa--

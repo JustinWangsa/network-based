@@ -12,7 +12,7 @@ const con = sql.createConnection({
 })
 const Response = {
     success:"success",
-    fail:"fail"
+    fail:"err from sql"
 } //TODO convert all response into json {status:success}, use middleware to res.header(json)
 function makeErrHandler(taskCount,res,successMsg=""){
     const task = taskCount;
@@ -334,21 +334,26 @@ router.post("/stock_page/update_item",async (req,res)=>{
         price
     } = req.body;
     const image = req.files?.icon?.data ?? '';
+    let currentStock = stock;
+
+    
     
 
     console.log({
         company_id,
         item_id,
         name,
-        stock,
+        stock,//either both filled or both empty
         price,
         image:image.toString('base64').substring(0,10),
     });
 
-   
-    
-    
-    
+    if( (stock=='' && price!='') || (stock!='' && price=='') ){
+        console.log('------fail, stock and price have holes');
+        res.end(Response.fail);
+        return;
+    }
+
     try{
         let changes, input;
         function optAppend(label,value){
@@ -356,13 +361,28 @@ router.post("/stock_page/update_item",async (req,res)=>{
                 changes.push(`${label} = ?`);
                 input.push(value);
             }
-        }
-        
+        } 
+
+        //stock_t update
+        if(price != '' && stock !=''){
+            const theQuery = sql.format(`
+                insert into stock_t set 
+                    company_id = ?
+                    ,time = NOW()
+                    ,item_id = ?
+                    ,price = ?    
+                    ,stock = ?    
+            `,[company_id,item_id,price,stock])
+            
+            console.log(theQuery);
+            await query(theQuery);
+        } else console.log("------stock_t unchanged");
+
         //item_t update
         input = [];
         changes = [];
         optAppend("name",name);
-        optAppend("stock",stock);
+        optAppend("currentStock",currentStock);//if stock is null, this doesnt do anything
         optAppend("image",image);
         
         if(changes != ''){
@@ -370,27 +390,12 @@ router.post("/stock_page/update_item",async (req,res)=>{
                 update item_t set 
                     ${changes.join(',')}
                 where 
-                    company_id = ? and 
                     id = ?
-            `,[...input,company_id,item_id]) 
+            `,[...input,item_id]) 
             
             console.log(theQuery);
             await query(theQuery); 
-        } else console.log("item_t unchanged");
-
-        //price_t update
-        if(price != ''){
-            const theQuery = sql.format(`
-                insert into price_t set 
-                    company_id = ?
-                    ,time = NOW()
-                    ,item_id = ?
-                    ,price = ?    
-            `,[company_id,item_id,price])
-            
-            console.log(theQuery);
-            await query(theQuery);
-        } else console.log("price_t unchanged");
+        } else console.log("------ item_t unchanged");
 
         res.end(item_id.toString())
         
@@ -398,12 +403,6 @@ router.post("/stock_page/update_item",async (req,res)=>{
         console.log(e)
         res.end(Response.fail);
     }
-
-
-
-    
-
- 
     
 })
 
@@ -481,8 +480,8 @@ primary key (company_id,time,item_id)
         return: default
     /login_page/log_in 
         input: 
-            n
-            p  
+            password
+            name  
         mechanism:
             select isManager,companyid from user_t
             where (n,p)
@@ -521,26 +520,26 @@ primary key (company_id,time,item_id)
         input: 
             item_id
             name
-            stock
+            stock //stock and price, either both filled or both empty
             price
             image
         mechanism:
-            if necessary
-                if only one of stock or price is filled,
-                qeury the previous entry to fill in the blank
-            new entry to stock_t
+            if both stock and price are provided
+            insert to stock_t
                 {company_id} = session
                 time = now()
                 item_id = from previous query
                 _stock 
                 _price
+
             if necessary
-            new entry to item_t 
-                id = item_id
-                {company_id} = session
+            update to item_t 
                 _name 
-                _image
                 _currentStock = stock
+                _image
+            where 
+                id = item_id
+                
             
         return: item_id
     /stock_page/fetch_item_list

@@ -5,8 +5,6 @@ GET http://localhost:3000/admin/dropTable HTTP/1.1
 ### create table
 GET http://localhost:3000/admin/createTable HTTP/1.1
 
-
-
 ### login_page/sign up
 POST http://localhost:3000/login_page/sign_up HTTP/1.1
 Content-Type: multipart/form-data; boundary=flasfls
@@ -54,71 +52,8 @@ Content-Disposition: form-data; name="name"
 lockheed_wrong
 --bababa--
 
-### login_page/log_in -- correct
-POST  http://localhost:3000/login_page/log_in HTTP/1.1/
-Content-Type: multipart/form-data; boundary=bababa
-
---bababa
-Content-Disposition: form-data; name="password"
-
-lockheed_cs
---bababa
-Content-Disposition: form-data; name="name"
-
-lockheed_cs
---bababa--
 
 
-
-### /stock_page/new_item 
-POST  http://localhost:3000/stock_page/new_item HTTP/1.1/
-Content-Type: multipart/form-data; boundary=bababa
-
---bababa
-Content-Disposition: form-data; name="name"
-
-slkdaw
---bababa
-Content-Disposition: form-data; name="icon"; filename="bbb.png"
-Content-Type: image/png
-
-< ./sampleImg.png
---bababa
-Content-Disposition: form-data; name="stock"
-
-12
---bababa
-Content-Disposition: form-data; name="price"
-
-56
---bababa--
-
-### /stock_page/update_item -- no item_id
-POST  http://localhost:3000/stock_page/update_item HTTP/1.1/
-Content-Type: multipart/form-data; boundary=bababa
-
---bababa
-Content-Disposition: form-data; name="item_id"
-
-8
---bababa
-Content-Disposition: form-data; name="name"
-
-
---bababa
-Content-Disposition: form-data; name="icon"; filename="bbb.png"
-Content-Type: image/png
-
-
---bababa
-Content-Disposition: form-data; name="stock"
-
-12
---bababa
-Content-Disposition: form-data; name="price"
-
-2
---bababa--
 
 ### fetch_item_list
 GET http://localhost:3000/stock_page/fetch_item_list HTTP/1.1
@@ -141,18 +76,6 @@ Content-Disposition: form-data; name="aaa"
 12
 --blablabla--
 
-# POST http://localhost:3000/testing HTTP/1.1
-# Content-Type: multipart/form-data; boundary=----hhhh
 
-# ------hhhh
-# Content-Disposition: form-data; name="ggg"
-
-# hhh
-# ------hhhh
-# Content-Disposition: form-data; name="myfile"; filename="mypng.png"
-# Content-Type: image/png
-
-# < ./sampleImg.png
-# ------hhhh--
 
 
