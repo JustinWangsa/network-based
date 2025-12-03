@@ -244,6 +244,20 @@ router.get("/login_page/log_out",(req,res)=>{
     res.end(Response.success);
 })
 
+
+// --------------------below this require log-in------------
+router.use(function loginCheck(req,res,next){
+    console.log("------passed login check");
+    
+    const company_id = req.session.company_id?? '';
+    if(company_id === ''){
+        console.log("------company id is null");
+        res.end(Response.fail);
+    } else {
+        req.body.company_id = company_id;
+        next();
+    }
+})
 /* 
 - prerequisite: /login_page/log_in
 - one per item. 
@@ -256,123 +270,136 @@ router.get("/login_page/log_out",(req,res)=>{
 }
 result: if(true) item_id else null
 */
-router.post("/stock_page/update_stock",async (req,res)=>{//TODO
-    
+router.post("/stock_page/new_item",async (req,res)=>{
     let { 
-        // company_id,//from session
-        item_id, //null meant its a new item
+        company_id,//from session
+
         name,
         stock,
-        price//stock and price must be both empty or valued
+        price
     } = req.body;
     const image = req.files?.icon?.data ?? '';
-    const company_id = req.session.company_id?? '';
+    
+    console.log({
+        name,
+        stock,
+        price,
+        company_id,
+        image:image.toString('base64').substring(0,10),
+    });
+
+    try{ 
+        let theQuery = sql.format(`
+            insert into item_t set 
+                company_id = ?,
+                name = ?,
+                currentStock = ?,
+                image = ? 
+        `,[company_id,name,Number(stock),image]);
+        console.log(theQuery.substring(0,200));
+        let okPacket = await query(theQuery);
+        item_id = okPacket.insertId;
+
+        
+        theQuery = sql.format(`
+            insert into stock_t set 
+                company_id = ?,
+                time = NOW(),
+                item_id = ?,
+                stock = ?,
+                price = ?   
+        `,[
+            company_id,
+            item_id,
+            Number(stock),
+            Number(price)
+        ]);
+        console.log(theQuery);
+        await query(theQuery);
+
+        res.end(item_id.toString());
+    } catch(e){
+        console.log(e)
+        res.end(Response.fail);
+    }
+ 
+})
+router.post("/stock_page/update_item",async (req,res)=>{
+    let { 
+        company_id,//from session
+
+        item_id, 
+        name,
+        stock,
+        price
+    } = req.body;
+    const image = req.files?.icon?.data ?? '';
+    
 
     console.log({
         company_id,
         item_id,
         name,
-        image:image.toString('base64').substring(0,10),
         stock,
         price,
+        image:image.toString('base64').substring(0,10),
     });
 
-    if(company_id === ''){
-        console.log("cant insert, company id is null");
-        res.end(Response.fail);
-        return;
-    }
+   
     
-    if(item_id == ''){//new entry
-        console.log("item has no id");
-        try{ //
-            let theQuery = sql.format(`
-                insert into item_t set 
-                    company_id = ?,
-                    name = ?,
-                    stock = ?,
-                    image = ? 
-            `,[company_id,name,Number(stock),image]);
-            console.log(theQuery);
-            let okPacket = await query(theQuery);
-
-            item_id = okPacket.insertId;
+    
+    
+    try{
+        let changes, input;
+        function optAppend(label,value){
+            if(value != ''){
+                changes.push(`${label} = ?`);
+                input.push(value);
+            }
+        }
+        
+        //item_t update
+        input = [];
+        changes = [];
+        optAppend("name",name);
+        optAppend("stock",stock);
+        optAppend("image",image);
+        
+        if(changes != ''){
+            const theQuery = sql.format(`
+                update item_t set 
+                    ${changes.join(',')}
+                where 
+                    company_id = ? and 
+                    id = ?
+            `,[...input,company_id,item_id]) 
             
-            theQuery = sql.format(`
+            console.log(theQuery);
+            await query(theQuery); 
+        } else console.log("item_t unchanged");
+
+        //price_t update
+        if(price != ''){
+            const theQuery = sql.format(`
                 insert into price_t set 
-                    company_id = ?,
-                    time = NOW(),
-                    item_id = ?,
-                    price = ?   
-            `,[
-                company_id,
-                item_id,
-                Number(price)
-            ]);
+                    company_id = ?
+                    ,time = NOW()
+                    ,item_id = ?
+                    ,price = ?    
+            `,[company_id,item_id,price])
+            
             console.log(theQuery);
             await query(theQuery);
+        } else console.log("price_t unchanged");
+
+        res.end(item_id.toString())
+        
+    } catch(e){
+        console.log(e)
+        res.end(Response.fail);
+    }
 
 
-            res.end(item_id.toString());
-        } catch(e){
-            console.log(e)
-            res.end(Response.fail);
-        }
-
-
-    } else {//update
-        //for item_t field, if null then dont update
-        try{
-            let changes, input;
-            function optAppend(label,value){
-                if(value != ''){
-                    changes.push(`${label} = ?`);
-                    input.push(value);
-                }
-            }
-            
-            //item_t update
-            input = [];
-            changes = [];
-            optAppend("name",name);
-            optAppend("stock",stock);
-            optAppend("image",image);
-            
-            if(changes != ''){
-                const theQuery = sql.format(`
-                    update item_t set 
-                        ${changes.join(',')}
-                    where 
-                        company_id = ? and 
-                        id = ?
-                `,[...input,company_id,item_id]) 
-                
-                console.log(theQuery);
-                await query(theQuery); 
-            } else console.log("item_t unchanged");
-
-            //price_t update
-            if(price != ''){
-                const theQuery = sql.format(`
-                    insert into price_t set 
-                        company_id = ?
-                        ,time = NOW()
-                        ,item_id = ?
-                        ,price = ?    
-                `,[company_id,item_id,price])
-                
-                console.log(theQuery);
-                await query(theQuery);
-            } else console.log("price_t unchanged");
-    
-            res.end(item_id.toString())
-           
-        } catch(e){
-            console.log(e)
-            res.end(Response.fail);
-        }
-
-    };
 
     
 
@@ -472,16 +499,16 @@ primary key (company_id,time,item_id)
     /stock_page/new_item
         input: 
             name
-            image
             stock
             price
+            image
         mechanism:
             new entry to item_t 
                 id = auto
                 {company_id} = session
                 name 
-                image
                 currentStock = stock
+                image
             new entry to stock_t
                 {company_id} = session
                 time = now()
@@ -494,9 +521,9 @@ primary key (company_id,time,item_id)
         input: 
             item_id
             name
-            image
             stock
             price
+            image
         mechanism:
             if necessary
                 if only one of stock or price is filled,
