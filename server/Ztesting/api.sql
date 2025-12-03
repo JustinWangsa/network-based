@@ -3,10 +3,10 @@ select "result"\G;
 show tables;
 
 desc company_t;
+desc user_t;
 desc item_t;
 desc stock_t;
 desc transaction_t;
-desc user_t;
 
 
 select "---------------data Dump-------------" \G;
@@ -24,6 +24,7 @@ select
     id as _item_id,
     company_id,
     name,
+    stock,
     LEFT(Hex(image),20)
 from item_t;
 select
@@ -31,14 +32,14 @@ select
     company_id,
     item_id,
     count
+    
 from transaction_t;
 select
-    time as _stock_time,
+    time as _price_time,
     company_id,
     item_id,
-    stock,
     price
-from stock_t;
+from price_t;
     
 
 
@@ -56,7 +57,5 @@ from stock_t;
 
 -- insert into company_t (name) values ("the Company");
 -- insert into user_t values (1,false,"theCompany_cashier","mypassword");
-
-
 
 

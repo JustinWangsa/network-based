@@ -1,6 +1,8 @@
 const {Router, response} = require('express')
 const router = Router();
 
+const fs = require("node:fs");
+
 const sql = require('mysql')
 const con = sql.createConnection({
     host:"localhost",
@@ -11,7 +13,7 @@ const con = sql.createConnection({
 const Response = {
     success:"success",
     fail:"fail"
-}
+} //TODO convert all response into json {status:success}, use middleware to res.header(json)
 function makeErrHandler(taskCount,res,successMsg=""){
     const task = taskCount;
     let completed = 0;
@@ -51,67 +53,85 @@ function query(qry,value){
 
 //TODO convert all con.query into query
 
-
-//return: default
+//TODO above section that include manager function, router.use(if not manager, res.end(fail) )
 router.get('/admin/dropTable',async (req,res)=>{
-    const _E = makeErrHandler(5,res,"Table Drop Successfully")
-    con.query("drop table if exists stock_t",_E)
-    con.query("drop table if exists transaction_t",_E)
-    con.query("drop table if exists user_t",_E)
-    con.query("drop table if exists item_t",_E)
-    con.query("drop table if exists company_t",_E)
+    try{
+        // const _E = makeErrHandler(5,res,"Table Drop Successfully")
+        await query("drop table if exists stock_t");
+        await query("drop table if exists transaction_t");
+        await query("drop table if exists user_t");
+        await query("drop table if exists item_t");
+        await query("drop table if exists company_t");
+        
+        console.log("------dropped all table");
+        res.end(Response.success);
+    } catch (e){
+        console.log(e);
+        res.end(Response.fail);
+    }
+    
     
 })
-
-//return: default
 router.get('/admin/createTable',async (req,res)=>{
-    const _E = makeErrHandler(5,res,"Table Created Successfully")
+    
 
-    con.query(`
-        create table company_t(
-            id      int AUTO_INCREMENT key,
-            name    varchar(1024) unique
-        );    
-    `,_E)
-    con.query(`
-        create table user_t(
-            company_id  int references company_t (id),
-            isManager   bool ,
-            name        varchar(1024) , -- suppose to be unique, but cause virtual bug
-            password    binary(40), -- sha1 is 160 bit, but this is hexed so 320 bit
-            primary key (company_id,isManager)
-        );
-    `,_E)
-    con.query(`
-        create table item_t(
-            id      int AUTO_INCREMENT Key,
-            company_id int references company_t (id),
-            name    varchar(256) unique,
-            image   longblob default null
-            
-        );
-    `,_E)
-    con.query(`
-        create table transaction_t(
-            company_id int references company_t (id),
-            time    datetime, -- [YYYY-MM-DD hh:mm:ss]
-            item_id int references item_t (id), -- on delete restrict
-            count   int,
+    try{
 
-            primary key (company_id,time,item_id)
-        );
-    `,_E)
-    con.query(`
-        create table stock_t(
-            company_id int references company_t (id),
-            time    datetime, -- [YYYY-MM-DD hh:mm:ss]
-            item_id int references item_t (id), -- on delete restrict 
-            stock   int,
-            price   int,
-            
-            primary key (company_id,time,item_id)
-        );
-    `,_E)
+        await query(`
+            create table company_t(
+                id      int AUTO_INCREMENT key,
+                name    varchar(1024) unique
+            );    
+        `)
+        await query(`
+            create table user_t(
+                company_id  int references company_t (id),
+                isManager   bool ,
+                name        varchar(1024), -- suppose to be unique, but cause virtual bug
+                password    binary(40), -- sha1 is 160 bit, but this is hexed so 320 bit
+                primary key (company_id,isManager)
+            );
+        `)
+        await query(`
+            create table item_t(
+                id      int AUTO_INCREMENT Key,
+                company_id int references company_t (id),
+                name    varchar(256) unique,
+                image   longblob default null,
+                currentStock   int
+                
+            );
+        `)
+        await query(`
+            create table stock_t(
+                company_id int references company_t (id),
+                time    datetime, -- [YYYY-MM-DD hh:mm:ss]
+                item_id int references item_t (id), -- on delete restrict 
+                stock    int,
+                price   int,
+
+                primary key (company_id,time,item_id)
+            );
+        `)
+        await query(`
+            create table transaction_t(
+                company_id int references company_t (id),
+                time    datetime, -- [YYYY-MM-DD hh:mm:ss]
+                item_id int references item_t (id), -- on delete restrict
+                count   int,
+
+                primary key (company_id,time,item_id)
+            );
+        `)
+        
+        
+        console.log("------created all table ");
+        res.end(Response.success);
+    } catch(e){
+        console.log(e);
+        res.end(Response.fail);
+    }
+    
 })
 
 //result: current companyName 
@@ -131,7 +151,6 @@ router.get('/admin/WhoAmI',async (req,res)=>{
             res.end(result[0].name);
         }
     })
-
 })
 
 //result: default
@@ -274,24 +293,23 @@ router.post("/stock_page/update_stock",async (req,res)=>{//TODO
                 insert into item_t set 
                     company_id = ?,
                     name = ?,
+                    stock = ?,
                     image = ? 
-            `,[company_id,name,image]);
+            `,[company_id,name,Number(stock),image]);
             console.log(theQuery);
             let okPacket = await query(theQuery);
 
             item_id = okPacket.insertId;
             
             theQuery = sql.format(`
-                insert into stock_t set 
+                insert into price_t set 
                     company_id = ?,
                     time = NOW(),
                     item_id = ?,
-                    stock = ?,
                     price = ?   
             `,[
                 company_id,
                 item_id,
-                Number(stock),
                 Number(price)
             ]);
             console.log(theQuery);
@@ -320,6 +338,7 @@ router.post("/stock_page/update_stock",async (req,res)=>{//TODO
             input = [];
             changes = [];
             optAppend("name",name);
+            optAppend("stock",stock);
             optAppend("image",image);
             
             if(changes != ''){
@@ -335,20 +354,19 @@ router.post("/stock_page/update_stock",async (req,res)=>{//TODO
                 await query(theQuery); 
             } else console.log("item_t unchanged");
 
-            //stock_t update
-            if(stock != '' && price != ''){
+            //price_t update
+            if(price != ''){
                 const theQuery = sql.format(`
-                    insert into stock_t set 
+                    insert into price_t set 
                         company_id = ?
                         ,time = NOW()
                         ,item_id = ?
-                        ,stock = ?
                         ,price = ?    
-                `,[company_id,item_id,stock,price])
+                `,[company_id,item_id,price])
                 
                 console.log(theQuery);
                 await query(theQuery);
-            } else console.log("stock_t unchanged");
+            } else console.log("price_t unchanged");
     
             res.end(item_id.toString())
            
@@ -365,24 +383,208 @@ router.post("/stock_page/update_stock",async (req,res)=>{//TODO
     
 })
 
+/* 
+return (json): []
+*/
+router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
+    
+})
+
+
 module.exports = router
 
 
 // /general/log_out(client side)
+/* 
+
+---------------------> company_t(
+    id      int AUTO_INCREMENT key,
+    name    varchar(1024) unique
+
+---------------------> user_t(
+    company_id  int references company_t (id),
+    isManager   bool ,
+    name        varchar(1024) ,
+    password    binary(40), 
+primary key (company_id,isManager)
+
+---------------------> item_t(
+    id              int AUTO_INCREMENT Key,
+    company_id      int references company_t (id),
+    name            varchar(256) unique,
+    image           longblob default null,
+    currentStock    int,
+    
+---------------------> stock_t(
+    company_id  int references company_t (id),
+    time        datetime,
+    item_id     int references item_t (id), 
+    stock       int,
+    price       int,
+primary key (company_id,time,item_id)
+
+---------------------> transaction_t(
+    company_id  int references company_t (id),
+    time        datetime, 
+    item_id     int references item_t (id),
+    count       int,
+primary key (company_id,time,item_id)
 
 
-// /login_page
-//     /login_page/submission (server convert password into hash)
-//     /login_page/sign_up 
-// /transaction_page
-//     /transaction_page/cart_page
-//     /transaction_page/post_transaction
-//     /transaction_page/fetch_transaction_history
-// /navigation(manager client side)
-//     /navigation/export(electron client exclusive)
-// /stock_page
-//     /stock_page/update_stock
-//     /stock_page/update_limitation
-// /summary_page
-//     /summary_page/high_level
-//     /summary_page/log
+        
+
+--------- include company_t and user_t
+/login_page
+    /login_page/sign_up
+        input: 
+            companyName
+            managerName 
+            managerPassword
+            cashierName
+            cashierPassword  
+        mechanism:
+            insert into company_t 
+                id=auto
+                _companyName
+            insert into user_t 
+                _companyName
+                _managerName
+                _managerPassword
+            insert into user_t 
+                _companyName
+                _cashierName
+                _cashierPassword    
+        return: default
+    /login_page/log_in 
+        input: 
+            n
+            p  
+        mechanism:
+            select isManager,companyid from user_t
+            where (n,p)
+            
+            save isManager,companyid to session
+        return: isManager
+    /login_page/logout 
+        input: nothing
+        mechanism: clean the session variable
+        return: default    
+
+------ also include item_t and price_t
+/stock_page
+    /stock_page/new_item
+        input: 
+            name
+            image
+            stock
+            price
+        mechanism:
+            new entry to item_t 
+                id = auto
+                {company_id} = session
+                name 
+                image
+                currentStock = stock
+            new entry to stock_t
+                {company_id} = session
+                time = now()
+                item_id = from previous query
+                stock 
+                price
+            also set currentStock into the new stock
+        return: item_id
+    /stock_page/update_item
+        input: 
+            item_id
+            name
+            image
+            stock
+            price
+        mechanism:
+            if necessary
+                if only one of stock or price is filled,
+                qeury the previous entry to fill in the blank
+            new entry to stock_t
+                {company_id} = session
+                time = now()
+                item_id = from previous query
+                _stock 
+                _price
+            if necessary
+            new entry to item_t 
+                id = item_id
+                {company_id} = session
+                _name 
+                _image
+                _currentStock = stock
+            
+        return: item_id
+    /stock_page/fetch_item_list
+        input: -
+        mechanism:
+            join item_t and stock_t (I.id, I.name, I.image, I.currentStock, S.price) 
+            on (item_id)  
+            where company_id, newest date,
+        return: [{id:...,name:...},...]
+/transaction_page
+    /transaction_page/cart_page (client side)
+    /transaction_page/post_transaction
+        input :
+            {item_id:count,...} 
+        mechanism:
+            for all item, add this to transaction_t
+                {company_id}=session
+                time = now()
+                _item_id 
+                _count
+            subtract from current 
+        return:current stock for each item SENT
+    /transaction_page/fetch_transaction_history
+        input : -
+        mechanism:
+            select top 5 newest transaction
+        return:{time1:{item...}, time2:{...}}
+    /transaction_page/update_transaction
+        input :
+            - {time:000,item_id:count,...} // should only post item whose count change
+        mechanism:
+            select from transaction_t
+                item_id
+                count
+            where
+                {company_id} = session
+                _time 
+            
+            then find difference
+
+            update transation_t for each item sent
+                _item_id
+                _count
+            where
+                {company_id} = session
+                _time
+            update currentStock in item_t
+
+            update item_t for each item sent
+                currentStock = currenstock + difference
+                where _item_id 
+        return:current stock for each item
+/summary_page
+    /summary_page/high_level
+        just /transaction_page/fetch_transaction_history without limitation
+        the client will decide how to display this data 
+    /summary_page/log
+        just /transaction_page/fetch_transaction_history without limitation
+/navigation(manager client side)
+    /navigation/export(electron client exclusive)
+        implementation
+            SELECT * FROM _table INTO OUTFILE '/tmp,csv'
+            FIELDS TERMINATED BY ','
+            ENCLOSED BY '"'
+            LINES TERMINATED BY '\n';
+
+            fs.createReadStream('..').pipe(res)
+        return: (binary)
+
+*/
+
