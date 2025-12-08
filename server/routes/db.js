@@ -3,7 +3,8 @@ const router = Router();
 
 const fs = require("node:fs");
 
-const sql = require('mysql')
+const sql = require('mysql');
+const { json } = require('node:stream/consumers');
 const con = sql.createConnection({
     host:"localhost",
     user:"root",
@@ -96,12 +97,12 @@ router.get('/admin/createTable',async (req,res)=>{
             create table item_t(
                 id      int AUTO_INCREMENT Key,
                 company_id int references company_t (id),
-                name    varchar(256) unique,
+                name    varchar(256),
                 image   longblob default null,
                 currentStock   int
                 
             );
-        `)
+        `)// name must not be unique, block other company
         await query(`
             create table stock_t(
                 company_id int references company_t (id),
@@ -336,9 +337,6 @@ router.post("/stock_page/update_item",async (req,res)=>{
     const image = req.files?.icon?.data ?? '';
     let currentStock = stock;
 
-    
-    
-
     console.log({
         company_id,
         item_id,
@@ -410,7 +408,34 @@ router.post("/stock_page/update_item",async (req,res)=>{
 return (json): []
 */
 router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
-    
+    try {
+        let result = await query(`
+            select 
+                i.id,
+                i.name,
+                i.image,
+                i.currentStock,
+                s.price
+            from (
+                select * from item_t
+                where company_id = 2 
+            ) as i
+            join (
+                select *, max(s.time) over(partition by s.item_id) as recent
+                from stock_t s
+            ) as s
+            on i.id = s.item_id and i.company_id = s.company_id
+            where s.time = s.recent
+        `)
+
+            
+            //TODO start from here
+        res.header('Content-Type','application/json')
+        res.end(JSON.stringify(result));
+    } catch (error) {
+        console.log(error);
+        res.end(Response.fail)
+    }
 })
 
 
@@ -439,7 +464,7 @@ primary key (company_id,isManager)
     currentStock    int,
     
 ---------------------> stock_t(
-    company_id  int references company_t (id),
+    company_id  int references company_t (id), --actually redundant
     time        datetime,
     item_id     int references item_t (id), 
     stock       int,
@@ -609,5 +634,52 @@ primary key (company_id,time,item_id)
             fs.createReadStream('..').pipe(res)
         return: (binary)
 
+
+
+old
+
+create table company_t(
+    id      int AUTO_INCREMENT key,
+    name    varchar(1024) unique
+);
+
+create table user_t(
+    company_id  int references company_t (id),
+    isManager   bool ,
+    name        varchar(1024) , -- suppose to be unique, but cause virtual bug
+    password    binary(40), -- sha1 is 160 bit, but this is hexed
+    
+    primary key (company_id,isManager)
+);-- this time I use SHA1() in sql. not bcrypt.hashSync($password, 10)
+
+
+
+
+create table item_t(
+    id      int AUTO_INCREMENT Key,
+    company_id int references company_t (id),
+    name    varchar(256) unique,
+    image   blob(65535) default null
+    
+);
+
+create table transaction_t(
+    company_id int references company_t (id),
+    time    datetime, -- [YYYY-MM-DD hh:mm:ss]
+    item_id int references item_t (id), -- on delete restrict
+    count   int,
+
+    primary key (company_id,time,item_id)
+);
+
+create table stock_t(
+    company_id int references company_t (id),
+    date    date, -- [YYYY-MM-DD]
+    item_id int references item_t (id), -- on delete restrict 
+    stock   int,
+    price   int,
+    
+    primary key (company_id,date,item_id)
+);        
 */
 

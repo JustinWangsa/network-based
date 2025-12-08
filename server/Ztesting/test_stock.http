@@ -5,12 +5,15 @@ Content-Type: multipart/form-data; boundary=bababa
 --bababa
 Content-Disposition: form-data; name="password"
 
-lockheed_cs
+google_cs
 --bababa
 Content-Disposition: form-data; name="name"
 
-lockheed_cs
+google_cs
 --bababa--
+
+### /stock_page/fetch_item_list
+get  http://localhost:3000/stock_page/fetch_item_list HTTP/1.1/
 
 
 ### /stock_page/update_item 

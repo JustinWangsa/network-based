@@ -7,6 +7,65 @@ desc user_t;
 desc item_t;
 desc stock_t;
 desc transaction_t;
+-- ---------------data generation---------------------------
+
+
+select "------------specific code-------------" \G;
+
+
+
+-- I.id, I.name, I.image, I.currentStock, S.price
+
+-- with recent
+-- select *, max(time) over(partition by s.item_id) as recent 
+-- from stock_t s
+-- ;
+
+-- only most recent
+-- select * 
+-- from(
+--     select *, max(time) over(partition by s.item_id) as recent 
+--     from stock_t s
+-- ) as s
+-- where s.time = s.recent
+-- ;
+
+select 
+    i.id,
+    i.name,
+    -- i.image,
+    i.currentStock,
+    s.price
+from (
+    select * from item_t
+    where company_id = 2 
+) as i
+join (
+    select *, max(s.time) over(partition by s.item_id) as recent
+    from stock_t s
+) as s
+on i.id = s.item_id and i.company_id = s.company_id
+where s.time = s.recent
+;
+
+-- select 
+--     i.name
+--     ,i.currentStock
+--     ,s.company_id
+--     ,s.time
+--     ,s.item_id
+--     ,s.price
+--     ,s.recent
+-- from item_t i join (
+--     select 
+--         *,
+--         max(s.time) over(partition by s.item_id) as recent
+--     from stock_t s
+-- ) s on i.id = s.item_id
+-- where 
+--     s.time = s.recent and 
+    
+-- ;
 
 
 select "---------------data Dump-------------" \G;
@@ -35,7 +94,7 @@ select
     
 from transaction_t;
 select
-    time as _price_time,
+    time as _stock_time,
     company_id,
     item_id,
     price,
