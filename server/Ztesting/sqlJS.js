@@ -20,8 +20,25 @@ function dump(err,result){
     else console.log(result);
 }
 
+let data = {
+    1:12,
+    4:1,
+    5:5
+};
+let company_id = 1
 
-console.log([1,2,3,...[3,4,5]]);
+
+
+let entries = Object.entries(data).map(kvPair=>
+    //  (company_id, time, item_id, count)
+    sql.format('(?,NOW(),?,?)',
+    [company_id,kvPair[0],kvPair[1]]
+)).join(',');
+
+let command = 'insert into transaction_t values '+entries;
+console.log(command);
+
+con.query(command,()=>console.log('done'));
 
 
 

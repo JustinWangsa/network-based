@@ -408,6 +408,7 @@ router.post("/stock_page/update_item",async (req,res)=>{
 return (json): []
 */
 router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
+    let {company_id} = req.body;
     try {
         let result = await query(`
             select 
@@ -418,7 +419,7 @@ router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
                 s.price
             from (
                 select * from item_t
-                where company_id = 2 
+                where company_id = ? 
             ) as i
             join (
                 select *, max(s.time) over(partition by s.item_id) as recent
@@ -426,7 +427,7 @@ router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
             ) as s
             on i.id = s.item_id and i.company_id = s.company_id
             where s.time = s.recent
-        `)
+        `,company_id)
 
             
             //TODO start from here
@@ -438,6 +439,76 @@ router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
     }
 })
 
+//return [{id,currentstock},...] of each item sent
+router.post("/transaction_page/post_transaction",async (req,res)=>{
+    //{item_id:count,...}
+    let data = JSON.parse(req.body.data);
+    let {company_id} = req.body;
+
+    let id_stock_arr = Object.entries(data);
+    
+    let id_arr = `(${Object.keys(data).join(',')})` ;
+    
+    try{
+        //inserting into transaction_t
+        let entries = id_stock_arr.map(kvPair=>
+            //(company_id, time, item_id, count)
+            sql.format('(?,NOW(),?,?)',
+            [company_id,kvPair[0],kvPair[1]]
+        )).join(',');
+        let command = 'insert into transaction_t values '+entries;
+        console.log(command);
+        await query(command);
+
+
+        // update item_t.currentStock
+        entries = id_stock_arr.map(id_stock=>
+            `when ${id_stock[0]} then currentStock - ${id_stock[1]}`    
+        ).join('\n')
+        command = `
+            update item_t set
+                currentStock = case id
+                    ${entries}
+                    else currentStock
+                end
+            where id in ${id_arr}
+        `;
+        console.log(command);
+        await query(command);
+
+        
+        // select item_t.currentStock
+        command = sql.format(`select id,currentStock from item_t where id in ${id_arr} and company_id=?`,company_id)
+        let result = await query(command)
+        res.header('COntent-Type','application/json');
+        res.end(JSON.stringify(result));
+        
+
+
+    } catch(e){
+        console.log(e);
+        res.end(Response.fail);
+    }
+    
+
+   
+
+
+})
+
+router.post("/transaction_page/update_transaction",async (req,res)=>{
+    
+    
+    
+    try{
+        res.end(Response.success);//TODO placeholder
+    } catch(e){
+        console.log(e);
+        res.end(Response.fail);
+    }
+})
+
+router.get("/transaction_page/fetch_transaction_history",async (req,res)=>{})
 
 module.exports = router
 
@@ -578,7 +649,7 @@ primary key (company_id,time,item_id)
     /transaction_page/cart_page (client side)
     /transaction_page/post_transaction
         input :
-            {item_id:count,...} 
+            data:{item_id:count,...} 
         mechanism:
             for all item, add this to transaction_t
                 {company_id}=session

@@ -13,65 +13,28 @@ desc transaction_t;
 select "------------specific code-------------" \G;
 
 
-
--- I.id, I.name, I.image, I.currentStock, S.price
-
--- with recent
--- select *, max(time) over(partition by s.item_id) as recent 
--- from stock_t s
--- ;
-
--- only most recent
--- select * 
--- from(
---     select *, max(time) over(partition by s.item_id) as recent 
---     from stock_t s
--- ) as s
--- where s.time = s.recent
--- ;
-
-select 
-    i.id,
-    i.name,
-    -- i.image,
-    i.currentStock,
-    s.price
-from (
-    select * from item_t
-    where company_id = 2 
-) as i
-join (
-    select *, max(s.time) over(partition by s.item_id) as recent
-    from stock_t s
-) as s
-on i.id = s.item_id and i.company_id = s.company_id
-where s.time = s.recent
-;
-
 -- select 
---     i.name
---     ,i.currentStock
---     ,s.company_id
---     ,s.time
---     ,s.item_id
---     ,s.price
---     ,s.recent
--- from item_t i join (
---     select 
---         *,
---         max(s.time) over(partition by s.item_id) as recent
---     from stock_t s
--- ) s on i.id = s.item_id
--- where 
---     s.time = s.recent and 
-    
+--     (case id 
+--         when 1 then 'ze google'
+--         when 2 then 'ze amazon'
+--         else id
+--     end) as msg 
+-- from company_t;
+-- update transaction_t set 
+--     count = case item_id
+--         when 1 then count + 11
+--         when 2 then count + 12
+--     end 
+-- where item_id in (1,2)
 -- ;
+
 
 
 select "---------------data Dump-------------" \G;
 select 
     id as _company_id,
     name
+
 from company_t;
 select
     name as _user_name,

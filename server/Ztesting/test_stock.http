@@ -12,8 +12,22 @@ Content-Disposition: form-data; name="name"
 google_cs
 --bababa--
 
+### /transaction_page/post_transaction
+post http://localhost:3000/transaction_page/post_transaction
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="data"
+
+{"2":50,"3":90}
+--bababa--
+
+
+
 ### /stock_page/fetch_item_list
 get  http://localhost:3000/stock_page/fetch_item_list HTTP/1.1/
+
+
 
 
 ### /stock_page/update_item 
