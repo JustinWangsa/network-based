@@ -440,13 +440,12 @@ router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
 })
 
 //return [{id,currentstock},...] of each item sent
-router.post("/transaction_page/post_transaction",async (req,res)=>{
+router.post("/transaction_page/new_transaction",async (req,res)=>{
     //{item_id:count,...}
     let data = JSON.parse(req.body.data);
     let {company_id} = req.body;
 
     let id_stock_arr = Object.entries(data);
-    
     let id_arr = `(${Object.keys(data).join(',')})` ;
     
     try{
@@ -483,20 +482,123 @@ router.post("/transaction_page/post_transaction",async (req,res)=>{
         res.header('COntent-Type','application/json');
         res.end(JSON.stringify(result));
         
-
-
     } catch(e){
         console.log(e);
         res.end(Response.fail);
     }
-    
-
-   
-
-
 })
 
+/* 
+input: {time:000,item_id:count,...}
+return {id,stock}[]
+*/
 router.post("/transaction_page/update_transaction",async (req,res)=>{
+    //data extraction
+    let {time,...data} = JSON.parse(req.body.data);
+    let {company_id} = req.body;
+    
+    //useful processed data
+    let data_arr = Object.entries(data);
+    let id_list = '('+Object.keys(data).join(',')+')'
+    
+    try{
+        //select from transaction_t
+        /** @type {{item_id:number,count:number}[]} */
+        let command = sql.format(`
+            select 
+                item_id, 
+                count 
+            from transaction_t 
+            where 
+                time = ? and
+                company_id = ?            
+        `,[time,company_id])
+        console.log(command);
+        let original_arr = await query(command);
+        console.log({original_arr});
+
+        let original = {};
+        original_arr.forEach(v=>{
+            original[v.item_id] = v.count
+        })
+        console.log({original});
+
+
+        
+        //insert with duplicate into transaction_t
+        let input = data_arr.map(v=>sql.format(
+            `(?,?,?,?)`,
+            //company_id, time, item_id, count
+            [company_id,time,v[0],v[1]]
+        )).join(',\n                ')
+
+        command = sql.format(`
+            insert into transaction_t values
+                ${input}
+            on duplicate key update
+                count = value(count) 
+        `,company_id);
+        console.log(command);
+        await query(command);
+
+        
+
+
+        //find difference = new - old
+        let difference = data_arr.map(v=>{
+            let item_id = v[0];
+            let newCount = v[1];
+            let oldCount = original[item_id] ?? 0;
+            return [item_id,newCount - oldCount];
+        });
+        console.log({difference});
+
+
+
+        //update: item_t.currentStock += difference
+        input  // (id,company_id,currentStock),(),...
+        = difference.map(v=>{
+            let item_id = v[0];
+            let diff = v[1];
+            return sql.format(
+                `(?,?,?)`,
+                [item_id, company_id, diff]
+            )
+        }).join(',\n')
+        command = `
+            insert into item_t (id,company_id,currentStock) values
+                ${input}
+            on duplicate key update
+                currentStock = currentStock - value(currentStock) 
+        `;
+        console.log(command);
+        await query(command);
+
+        
+        
+        //select item_t.currentStock of newly changed item
+        command = `
+            select 
+                id,
+                currentStock as stock
+            from item_t
+            where 
+                company_id = ${company_id} and 
+                id in ${id_list}
+        `
+        let result = await query(command);
+        console.log(result);
+        
+
+
+        res.end(JSON.stringify(result));
+    } catch(e){
+        console.log(e);
+        res.end(Response.fail);
+    }
+})
+
+router.post("/summary_page/high_level",async (req,res)=>{
     
     
     
@@ -508,7 +610,36 @@ router.post("/transaction_page/update_transaction",async (req,res)=>{
     }
 })
 
-router.get("/transaction_page/fetch_transaction_history",async (req,res)=>{})
+/* 
+return [{"time","item_id","count","rank"},...]
+*/
+router.get("/transaction_page/fetch_transaction_history",async (req,res)=>{
+    let {company_id} = req.body;
+
+    try{        
+        let result = await query(`
+            select 
+                t.time,
+                t.item_id,
+                t.count,
+                t.rank
+            from (
+                select 
+                    *,
+                    dense_rank() over(order by t.time desc) as rank
+                from transaction_t t
+                where company_id = ?
+            ) as t
+            where rank <= 5;
+        `,company_id) //just change the rank
+
+        res.header("Content-Type","application/json");
+        res.end(JSON.stringify(result));
+    } catch(e){
+        console.log(e);
+        res.end(Response.fail);
+    }
+})
 
 module.exports = router
 
@@ -647,7 +778,7 @@ primary key (company_id,time,item_id)
         return: [{id:...,name:...},...]
 /transaction_page
     /transaction_page/cart_page (client side)
-    /transaction_page/post_transaction
+    /transaction_page/new_transaction
         input :
             data:{item_id:count,...} 
         mechanism:
@@ -657,7 +788,7 @@ primary key (company_id,time,item_id)
                 _item_id 
                 _count
             subtract from current 
-        return:current stock for each item SENT
+        return:[{id,currentstock},...] for each item SENT
     /transaction_page/fetch_transaction_history
         input : -
         mechanism:
@@ -673,7 +804,6 @@ primary key (company_id,time,item_id)
             where
                 {company_id} = session
                 _time 
-            
             then find difference
 
             update transation_t for each item sent

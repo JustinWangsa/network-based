@@ -13,21 +13,58 @@ desc transaction_t;
 select "------------specific code-------------" \G;
 
 
--- select 
---     (case id 
---         when 1 then 'ze google'
---         when 2 then 'ze amazon'
---         else id
---     end) as msg 
--- from company_t;
--- update transaction_t set 
---     count = case item_id
---         when 1 then count + 11
---         when 2 then count + 12
---     end 
--- where item_id in (1,2)
--- ;
+-- select time, item_id, count
+-- from transaction_t
+-- where 
+--     company_id = 1 and
+--     time in (
+        
+--     )
 
+-- top 5 recent date
+-- select time, item_id, count from transaction_t
+-- where 
+-- company_id = 1 and     
+--     time in ( 
+--         select time from transaction_t
+--         where company_id = 1
+--         group by time
+--         order by time desc
+--         limit 2
+--     )
+
+select 
+    t.time,
+    t.item_id,
+    t.count,
+    t.rank
+from (
+    select 
+        *,
+        dense_rank() over(order by t.time desc) as rank
+    from transaction_t t
+    where company_id = 1
+) as t
+where rank <= 2;
+
+
+
+
+
+-- select time from transaction_t
+--         where company_id = 1
+--         group by time
+--         order by time desc
+--         limit 2
+
+-- select t.time from transaction_t t
+-- where t.company_id = 1
+-- group by t.time 
+-- order by t.time desc
+;
+
+-- ;
+;
 
 
 select "---------------data Dump-------------" \G;
