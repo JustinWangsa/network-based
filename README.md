@@ -1,20 +1,24 @@
 documentation
 
 >request:
-minta foto default buat item yang belum punya foto
+- minta foto default buat item yang belum punya foto
 
 >general:
-- host:localhost, user:root, password:root, dbname:test_db
+- database host:localhost, user:root, password:root, dbname:test_db
 (semua temporary)
+- server will be responding to http://localhost:3000
 - API default behaviour (if documentation omit a behaviour, that api behaviour is the default defined here):
     - return "err from sql" or "fail"
     - input 
-        - send data (including file) normally using multipart/form-data
-        - default value will be '' or 0 depending on the type
+        - to send data, use multipart/formdata as content type (the default type for FormData in js and default for fetch)
+        - default value will be interpreted as '' or 0 depending on the type
     - the method that will be used 
 
-- to send data, use multipart/formdata as content type (the default type for FormData in js and default for fetch)
-- data is returned with application/json content type
+> table design notes (not required to know to use the api):
+- item_t and stock_t works together to represent an item. item_t hold data which it's evolution/history doesnt need to be kept, while stock_t are the otherway around.
+
+
+
 
 <br>
 
@@ -40,14 +44,17 @@ minta foto default buat item yang belum punya foto
 - create new company in company_t
 - create new manager account in user_t
 - create new cashier account in user_t
+
 - note 
     - after signup, you still need to login
+
+
 > post /login_page/log_in.
 - input
     - password
     - name
 - return 
-    - isManager
+    - isManager(0|1)
 - it will be successful if that name and password combination exist
 - this will add the isManager and companyName to the server's session 
 
@@ -59,110 +66,58 @@ minta foto default buat item yang belum punya foto
 ### login-required API:
 > post /stock_page/new_item
 - input: 
-    - name. default(as per other field) will be '' or 0
+    - name. 
     - stock. this is the current stock 
     - price
-    - image. send file normally 
--mechanism:
-    -new entry to item_t 
-        -id = auto
-        -{company_id} = session
--        name 
-        -currentStock = stock
--        image
-    -new entry to stock_t
-        - {company_id} = session
-        - time = now()
-        - item_id = from previous query
-        - stock 
-        - price
-    -also set currentStock into the new stock
--return: item_id
-> post /stock_page/update_stock
+    - icon. 
+- return:
+    - item_id
+- receive only one item at a time
+- add this new item into item_t and stock_t
+
+
+> post /stock_page/update_item
 - input
-    - item_id. null means its a new item
-    - name. -can be null if item_id is not null. Needs to be unique
-    - image. -can be null
+    - item_id. 
+    - name. if null/'', it will not update that column in the table.
+    - icon. if null/'', it will not update that column in the table.
     - stock. 
     - price. (make sure stock and price are either both empty or both filled)
-- insert or update database
+- return 
+    item_id
+- update item_t for that specific item, while it adds a new record in stock_t.
+- this will override the currentStock in item_t
+
+> get /stock_page/fetch_item_list
+- return: 
+    {id,name,image,currentStock,price}[]
+- it will return all item and their data for company that is loged in. the price will always be from the newest record
+
+> post /transaction_page/new_transaction
+- input :
+    - data:{item_id:count,...} 
+        - the data object is suppose to be an object where it's property are all item's id that are involved in a transactoin, while the property value is how much of that item is flowing. for example: {1:2,2:4} meant that there's 2 item with id 1 and 4 item with id 4.
+- return:
+    {id,currentstock}[] 
+- it will send both insert new entries into transaction_t, but also update the currentStock in item_t
 
 
-/stock_page
-    
-    /stock_page/update_item
-        input: 
-            item_id
-            name
-            stock //stock and price, either both filled or both empty
-            price
-            image
-        mechanism:
-            if both stock and price are provided
-            insert to stock_t
-                {company_id} = session
-                time = now()
-                item_id = from previous query
-                _stock 
-                _price
+> post /transaction_page/update_transaction
+- input :
+    - data:{time,item_id:count,...} 
+        - only need to include item whose quantity changes
+        - like /transaction_page/new_transaction input, but one of the property of data must be time:(the transaction time of a transaction)
+- return:
+    {id,currentstock}[] 
+- it will update new entries in transaction_t, and also update the currentStock in item_t
 
-            if necessary
-            update to item_t 
-                _name 
-                _currentStock = stock
-                _image
-            where 
-                id = item_id
-                
-            
-        return: item_id
-    /stock_page/fetch_item_list
-        input: -
-        mechanism:
-            join item_t and stock_t (I.id, I.name, I.image, I.currentStock, S.price) 
-            on (item_id)  
-            where company_id, newest date,
-        return: [{id:...,name:...},...]
-/transaction_page
-    /transaction_page/cart_page (client side)
-    /transaction_page/new_transaction
-        input :
-            data:{item_id:count,...} 
-        mechanism:
-            for all item, add this to transaction_t
-                {company_id}=session
-                time = now()
-                _item_id 
-                _count
-            subtract from current 
-        return:[{id,currentstock},...] for each item SENT
-    /transaction_page/fetch_transaction_history
-        input : -
-        mechanism:
-            select top 5 newest transaction
-        return:{time1:{item...}, time2:{...}}
-    /transaction_page/update_transaction
-        input :
-            - {time:000,item_id:count,...} // should only post item whose count change
-        mechanism:
-            select from transaction_t
-                item_id
-                count
-            where
-                {company_id} = session
-                _time 
-            
-            then find difference
 
-            update transation_t for each item sent
-                _item_id
-                _count
-            where
-                {company_id} = session
-                _time
-            update currentStock in item_t
+> get /transaction_page/fetch_transaction_history
+- return:
+    {"time","item_id","count","rank"}[]
+- this will return the 5 most recent transaction
+- rank is a debugging tools, can be ignored
+- do note that this doesnt mean there is 5 array entries, since one transaction might be more than just an entries (a transaction involving 3 item, will take 3 array entry space)
 
-            update item_t for each item sent
-                currentStock = currenstock + difference
-                where _item_id 
-        return:current stock for each item
+>/navigation/export and /summary_page/high_level still await further discussion
+

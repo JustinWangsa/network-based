@@ -20,11 +20,11 @@ function dump(err,result){
     else console.log(result);
 }
 
-let {time, ...data} = {time:"mytime",0:12,3:123};
-console.log(time);
-console.log(data);
+// let {time, ...data} = {time:"mytime",0:12,3:123};
+// console.log(time);
+// console.log(data);
 
-
+let {a,b,c,d} = {a:1,b:2,c:3,d:4};
 
 
 function testing(req_body){

@@ -12,58 +12,124 @@ desc transaction_t;
 
 select "------------specific code-------------" \G;
 
-
--- select time, item_id, count
--- from transaction_t
--- where 
---     company_id = 1 and
---     time in (
-        
---     )
-
--- top 5 recent date
--- select time, item_id, count from transaction_t
--- where 
--- company_id = 1 and     
---     time in ( 
---         select time from transaction_t
+-- select * 
+-- from (
+--     select 
+--         t.time as ttime,
+--         t.item_id,
+--         t.count,
+--         s.time as stime,
+--         s.price,
+--         dense_rank() over(
+--             partition by ttime,item_id
+--             order by stime desc
+--         ) as rank
+--     from (
+--         select * from transaction_t
 --         where company_id = 1
---         group by time
---         order by time desc
---         limit 2
---     )
+--     ) as t
+--     join (
+--         select * from stock_t
+--     ) as s 
+--     on 
+--         t.company_id = s.company_id and
+--         t.item_id = s.item_id and
+--         t.time >= s.time
+--     order by ttime
+-- ) as q
+-- where q.rank = 1
+-- ;
 
+set @company_id = 1;
+
+-- company transaction
+-- select * from transaction_t
+-- where company_id = @company_id
+-- ;
+
+
+-- company price history
+-- select 
+--     time,
+--     item_id,
+--     price
+-- from stock_t
+-- where company_id = @company_id
+-- ;
+
+
+-- join transaction and price 
+-- select 
+--     t.time as ttime,
+--     t.item_id,
+--     t.count,
+--     s.time as stime,
+--     s.price,
+--     dense_rank() over (
+--         partition by ttime,item_id
+--         order by stime desc
+--     ) as rank
+-- from (
+--     select 
+--         time,
+--         item_id,
+--         count
+--     from transaction_t 
+--     where company_id = @company_id
+-- ) as t
+-- join (
+--     select 
+--         time,
+--         item_id,
+--         price
+--     from stock_t
+--     where company_id = @company_id
+-- ) as s
+-- on 
+--     s.item_id = t.item_id and
+--     s.time <= t.time 
+-- order by ttime
+
+-- only rank 1
 select 
-    t.time,
-    t.item_id,
-    t.count,
-    t.rank
+    ttime as time,
+    item_id,
+    count,
+    price
 from (
     select 
-        *,
-        dense_rank() over(order by t.time desc) as rank
-    from transaction_t t
-    where company_id = 1
+        t.time as ttime,
+        t.item_id,
+        t.count,
+        s.time as stime,
+        s.price,
+        dense_rank() over (
+            partition by ttime,item_id
+            order by stime desc
+        ) as rank
+    from (
+        select 
+            time,
+            item_id,
+            count
+        from transaction_t 
+        where company_id = @company_id
+    ) as t
+    join (
+        select 
+            time,
+            item_id,
+            price
+        from stock_t
+        where company_id = @company_id
+    ) as s
+    on 
+        s.item_id = t.item_id and
+        s.time <= t.time 
+    order by ttime
 ) as t
-where rank <= 2;
+where rank = 1
 
-
-
-
-
--- select time from transaction_t
---         where company_id = 1
---         group by time
---         order by time desc
---         limit 2
-
--- select t.time from transaction_t t
--- where t.company_id = 1
--- group by t.time 
--- order by t.time desc
-;
-
--- ;
 ;
 
 

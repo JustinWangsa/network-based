@@ -271,7 +271,7 @@ router.use(function loginCheck(req,res,next){
 }
 result: if(true) item_id else null
 */
-router.post("/stock_page/new_item",async (req,res)=>{
+router.post("/stock_page/new_item",async (req,res)=>{//TODO support multiple item at a time
     let { 
         company_id,//from session
 
@@ -326,6 +326,7 @@ router.post("/stock_page/new_item",async (req,res)=>{
  
 })
 router.post("/stock_page/update_item",async (req,res)=>{
+    //TODO support multiple item at a time
     let { 
         company_id,//from session
 
@@ -377,6 +378,7 @@ router.post("/stock_page/update_item",async (req,res)=>{
         } else console.log("------stock_t unchanged");
 
         //item_t update
+        //TODO use obj and sql.format
         input = [];
         changes = [];
         optAppend("name",name);
@@ -405,7 +407,7 @@ router.post("/stock_page/update_item",async (req,res)=>{
 })
 
 /* 
-return (json): []
+return (json): [{id,name,image,currentStock,price}]
 */
 router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
     let {company_id} = req.body;
@@ -590,7 +592,7 @@ router.post("/transaction_page/update_transaction",async (req,res)=>{
         console.log(result);
         
 
-
+        res.header('Content-Type','application/json')
         res.end(JSON.stringify(result));
     } catch(e){
         console.log(e);
@@ -598,17 +600,6 @@ router.post("/transaction_page/update_transaction",async (req,res)=>{
     }
 })
 
-router.post("/summary_page/high_level",async (req,res)=>{
-    
-    
-    
-    try{
-        res.end(Response.success);//TODO placeholder
-    } catch(e){
-        console.log(e);
-        res.end(Response.fail);
-    }
-})
 
 /* 
 return [{"time","item_id","count","rank"},...]
@@ -631,10 +622,82 @@ router.get("/transaction_page/fetch_transaction_history",async (req,res)=>{
                 where company_id = ?
             ) as t
             where rank <= 5;
-        `,company_id) //just change the rank
+        `,company_id)  
 
         res.header("Content-Type","application/json");
         res.end(JSON.stringify(result));
+    } catch(e){
+        console.log(e);
+        res.end(Response.fail);
+    }
+})
+
+
+/* 
+return: {time, item_id, count. price}[] //transaction history only, no price
+*/
+router.get("/summary_page/high_level",async (req,res)=>{
+    let {company_id} = req.body;
+
+    try{        
+        let result = await query(`
+            select 
+                ttime as time,
+                item_id,
+                count,
+                price
+            from (
+                select 
+                    t.time as ttime,
+                    t.item_id,
+                    t.count,
+                    s.time as stime,
+                    s.price,
+                    dense_rank() over (
+                        partition by ttime,item_id
+                        order by stime desc
+                    ) as rank
+                from (
+                    select 
+                        time,
+                        item_id,
+                        count
+                    from transaction_t 
+                    where company_id = ${company_id}
+                ) as t
+                join (
+                    select 
+                        time,
+                        item_id,
+                        price
+                    from stock_t
+                    where company_id = ${company_id}
+                ) as s
+                on 
+                    s.item_id = t.item_id and
+                    s.time <= t.time 
+                order by ttime
+            ) as t
+            where rank = 1
+        `)
+
+        res.header("Content-Type","application/json");
+        res.end(JSON.stringify(result));
+    } catch(e){
+        console.log(e);
+        res.end(Response.fail);
+    }
+})
+
+/* 
+electron exclusive, still unclear
+*/
+router.post("/navigation/export",async (req,res)=>{
+    
+    
+    
+    try{
+        res.end(Response.success);//TODO placeholder
     } catch(e){
         console.log(e);
         res.end(Response.fail);
@@ -793,7 +856,7 @@ primary key (company_id,time,item_id)
         input : -
         mechanism:
             select top 5 newest transaction
-        return:{time1:{item...}, time2:{...}}
+        return:{"time","item_id","count","rank"}[]
     /transaction_page/update_transaction
         input :
             - {time:000,item_id:count,...} // should only post item whose count change
