@@ -119,5 +119,11 @@ documentation
 - rank is a debugging tools, can be ignored
 - do note that this doesnt mean there is 5 array entries, since one transaction might be more than just an entries (a transaction involving 3 item, will take 3 array entry space)
 
->/navigation/export and /summary_page/high_level still await further discussion
+> get /summary_page/high_level
+- return:
+    {time, item_id, count, price}[]
+- unlike /transaction_page/fetch_transaction_history, this return all transaction history, as well as the price at that time
+
+>/navigation/export still await further discussion
+
 
