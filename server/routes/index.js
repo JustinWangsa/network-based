@@ -3,16 +3,37 @@ var router = express.Router();
 const fs = require('node:fs');
 const path = require('node:path');
 
-const assetsFolder = 'D:\\tugas\\3_1\\NetworkApp\\Final\\Server\\client_browser\\src\\assets';
-const viewsFolder = 'D:\\tugas\\3_1\\NetworkApp\\Final\\Server\\client_browser\\src\\views';
+const client_browserFolder = '../client_browser';
+
 
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/', function(req, res) {
   // res.render('index', { title: 'Express' });
 
-  fs.createReadStream('D:\\tugas\\3_1\\NetworkApp\\Final\\Server\\server\\Ztesting\\form.html').pipe(res)
+  fs.createReadStream('../client_browser/src/views/Cashier/cashier.html').pipe(res)
+  
+});
 
+router.get('/src/assets/*.svg', (req, res) => {
+  // res.render('index', { title: 'Express' });
+  let root = path.join(__dirname,'..')
+  let url = path.join(root,client_browserFolder,req.url);
+
+  res.header('Content-Type','image/svg+xml');
+  fs.createReadStream(url).pipe(res);
+  
+  // res.sendFile((url));
+  
+  
+});
+router.get('/src/*', (req, res) => {
+  // res.render('index', { title: 'Express' });
+  let url = path.join(client_browserFolder,req.url);
+  fs.createReadStream(url).pipe(res);
+  
+  
+  
 });
 
 module.exports = router;

@@ -1,18 +1,27 @@
-documentation
+
 
 >request:
 - minta foto default buat item yang belum punya foto
 
->general:
+> to start the server:
+- clone the repo by typing: git clone https://github.com/JustinWangsa/network-based.git -b Server server
+- go to the server directory by typing: cd server
+- install dependency by typing: npm install
+- then run by typing: npm run start
+- server will be listening to http://localhost:3000
+
+> page serving API preface:
+- in the [index.js](server/routes/index.js), the varaible [client_browserFolder] need to be assign the folder location of the front end resources, relative to the [server](server) folder( ./ refer to file inside the server folder)
+
+
+> DB managing API preface:
 - database host:localhost, user:root, password:root, dbname:test_db
-(semua temporary)
-- server will be responding to http://localhost:3000
-- API default behaviour (if documentation omit a behaviour, that api behaviour is the default defined here):
-    - return "err from sql" or "fail"
+    (value subject to change)
+- API behaviour (if documentation omit a behaviour, that api will follow the default behaviour defined below):
+    - return "err from sql" or "success"
     - input 
         - to send data, use multipart/formdata as content type (the default type for FormData in js and default for fetch)
         - default value will be interpreted as '' or 0 depending on the type
-    - the method that will be used 
 
 > table design notes (not required to know to use the api):
 - item_t and stock_t works together to represent an item. item_t hold data which it's evolution/history doesnt need to be kept, while stock_t are the otherway around.
