@@ -23,7 +23,10 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-
+app.use((req,res,next)=>{
+  console.log(`----${req.url}`);
+  next();
+})
 app.use(logger('dev'));
 app.use(fileUpload());// req.files
 app.use(express.json());//"application/json" -> req.body
@@ -40,7 +43,7 @@ app.use(session({
 
 
 app.use('/', indexRouter);
-app.use('/', dbRouter);
+app.use('/db', dbRouter);
 app.use('/testing', testingRouter);
 
 

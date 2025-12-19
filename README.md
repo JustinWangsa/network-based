@@ -23,18 +23,18 @@ documentation
 <br>
 
 ### admin API (this is for testing, not used in the final product):
-> get /admin/dropTable. 
+> get /db/admin/dropTable. 
 - drops the table
 - this is used in combination with create table to reset table data
-> get /admin/createTable.
+> get /db/admin/createTable.
 - create the table, will fail if the table already exists
-> get /admin/WhoAmI.
+> get /db/admin/WhoAmI.
 - return the company name if successful
 
 <br>
 
 ### non-logid API (do not require login):
-> post /login_page/sign_up
+> post /db/login_page/sign_up
 - input
     - companyName
     - managerName
@@ -49,7 +49,7 @@ documentation
     - after signup, you still need to login
 
 
-> post /login_page/log_in.
+> post /db/login_page/log_in.
 - input
     - password
     - name
@@ -58,13 +58,13 @@ documentation
 - it will be successful if that name and password combination exist
 - this will add the isManager and companyName to the server's session 
 
-> get /login_page/log_out
+> get /db/login_page/log_out
 - wipe the server's session 
     
 <br>
 
 ### login-required API:
-> post /stock_page/new_item
+> post /db/stock_page/new_item
 - input: 
     - name. 
     - stock. this is the current stock 
@@ -76,7 +76,7 @@ documentation
 - add this new item into item_t and stock_t
 
 
-> post /stock_page/update_item
+> post /db/stock_page/update_item
 - input
     - item_id. 
     - name. if null/'', it will not update that column in the table.
@@ -88,12 +88,12 @@ documentation
 - update item_t for that specific item, while it adds a new record in stock_t.
 - this will override the currentStock in item_t
 
-> get /stock_page/fetch_item_list
+> get /db/stock_page/fetch_item_list
 - return: 
     {id,name,image,currentStock,price}[]
 - it will return all item and their data for company that is loged in. the price will always be from the newest record
 
-> post /transaction_page/new_transaction
+> post /db/transaction_page/new_transaction
 - input :
     - data:{item_id:count,...} 
         - the data object is suppose to be an object where it's property are all item's id that are involved in a transactoin, while the property value is how much of that item is flowing. for example: {1:2,2:4} meant that there's 2 item with id 1 and 4 item with id 4.
@@ -102,7 +102,7 @@ documentation
 - it will send both insert new entries into transaction_t, but also update the currentStock in item_t
 
 
-> post /transaction_page/update_transaction
+> post /db/transaction_page/update_transaction
 - input :
     - data:{time,item_id:count,...} 
         - only need to include item whose quantity changes
@@ -112,18 +112,18 @@ documentation
 - it will update new entries in transaction_t, and also update the currentStock in item_t
 
 
-> get /transaction_page/fetch_transaction_history
+> get /db/transaction_page/fetch_transaction_history
 - return:
     {"time","item_id","count","rank"}[]
 - this will return the 5 most recent transaction
 - rank is a debugging tools, can be ignored
 - do note that this doesnt mean there is 5 array entries, since one transaction might be more than just an entries (a transaction involving 3 item, will take 3 array entry space)
 
-> get /summary_page/high_level
+> get /db/summary_page/high_level
 - return:
     {time, item_id, count, price}[]
 - unlike /transaction_page/fetch_transaction_history, this return all transaction history, as well as the price at that time
 
->/navigation/export still await further discussion
+> /navigation/export still await further discussion
 
 

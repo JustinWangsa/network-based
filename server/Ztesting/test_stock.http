@@ -1,5 +1,5 @@
 ### login_page/log_in -- correct
-POST  http://localhost:3000/login_page/log_in HTTP/1.1/
+POST  http://localhost:3000/db/login_page/log_in HTTP/1.1/
 Content-Type: multipart/form-data; boundary=bababa
 
 --bababa
@@ -13,11 +13,11 @@ google_cs
 --bababa--
 
 ### /summary_page/high_level
-get  http://localhost:3000/summary_page/high_level HTTP/1.1/
+get  http://localhost:3000/db/summary_page/high_level HTTP/1.1/
 
 
 ### /transaction_page/update_transaction
-post http://localhost:3000/transaction_page/update_transaction
+post http://localhost:3000/db/transaction_page/update_transaction
 Content-Type: multipart/form-data; boundary=bababa
 
 --bababa
@@ -27,12 +27,12 @@ Content-Disposition: form-data; name="data"
 --bababa--
 
 ### /transaction_page/fetch_transaction_history
-get  http://localhost:3000/transaction_page/fetch_transaction_history HTTP/1.1/
+get  http://localhost:3000/db/transaction_page/fetch_transaction_history HTTP/1.1/
 
 
 
 ### /transaction_page/post_transaction
-post http://localhost:3000/transaction_page/post_transaction
+post http://localhost:3000/db/transaction_page/post_transaction
 Content-Type: multipart/form-data; boundary=bababa
 
 --bababa
@@ -44,13 +44,13 @@ Content-Disposition: form-data; name="data"
 
 
 ### /stock_page/fetch_item_list
-get  http://localhost:3000/stock_page/fetch_item_list HTTP/1.1/
+get  http://localhost:3000/db/stock_page/fetch_item_list HTTP/1.1/
 
 
 
 
 ### /stock_page/update_item 
-POST  http://localhost:3000/stock_page/update_item HTTP/1.1/
+POST  http://localhost:3000/db/stock_page/update_item HTTP/1.1/
 Content-Type: multipart/form-data; boundary=bababa
 
 --bababa
@@ -77,7 +77,7 @@ Content-Disposition: form-data; name="price"
 --bababa--
 
 ### /stock_page/new_item 
-POST  http://localhost:3000/stock_page/new_item HTTP/1.1/
+POST  http://localhost:3000/db/stock_page/new_item HTTP/1.1/
 Content-Type: multipart/form-data; boundary=bababa
 
 --bababa
