@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form id="myform">
+        <input name="name" value="google_cs">
+        <input name="password" value="google_cs">
+    </form>
+    <button onclick="login()">login</button>
+
+    <script>
+        let myform = document.getElementById('myform');
+        function login(){
+            let formbody = new FormData(myform);
+            fetch('http://localhost:3000/db/login_page/log_in',{
+                method:"POST",
+                body:formbody
+            })
+            .then(v=>v.text())
+            .then(v=>console.log(v))
+            //nek bener hasile = 0 atau 1
+        }
+    </script>
+</body>
+</html>
