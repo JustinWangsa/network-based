@@ -1,0 +1,28 @@
+### who am i
+GET  http://localhost:3000/db/admin/WhoAmI
+
+
+
+
+### /navigation/export/transaction
+GET http://localhost:3000/db/navigation/export/transaction
+### /navigation/export/price
+GET http://localhost:3000/db/navigation/export/price
+### /navigation/export/stock
+GET http://localhost:3000/db/navigation/export/stock
+### /navigation/export/stockDynamic
+GET http://localhost:3000/db/navigation/export/stockDynamic
+
+### /login_page/log_in
+POST  http://localhost:3000/db/login_page/log_in
+Content-Type: multipart/form-data; boundary=google
+
+--google
+Content-disposition: form-data; name="name"
+
+google_mg
+--google
+Content-disposition: form-data; name="password"
+
+google_mg
+--google--

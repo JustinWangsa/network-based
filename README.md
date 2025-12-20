@@ -133,6 +133,23 @@
     {time, item_id, count, price}[]
 - unlike /transaction_page/fetch_transaction_history, this return all transaction history, as well as the price at that time
 
-> /navigation/export still await further discussion
-
+> get /navigation/export/transaction 
+- return: 
+    - a plain text that is in the csv format. 
+    - the column are: time and each item in the item list
+> get /navigation/export/price
+- return: 
+    - a plain text that is in the csv format. 
+    - the column are: time and each item in the item list. this describe the price of each item at each transaction
+    - items that are added later on will have the price set to 0 for transaction record before that addition
+> get /navigation/export/stock
+- return: 
+    - a plain text that is in the csv format. 
+    - the column are: time and each item in the item list. this shows every time the stock is manually set, since 
+    - items that are added later on will have the price set to 0 for transaction record before that addition
+> get /navigation/export/stockDynamic
+- return: 
+    - a plain text that is in the csv format. 
+    - the column are: time and each item in the item list. 
+    - each row corresponds to each transaction. It shows the calculated current stock after transaction. when a stock is manually set, from that time onward, that number will be treated as the current stock 
 

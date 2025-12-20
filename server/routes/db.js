@@ -692,85 +692,140 @@ router.get("/summary_page/high_level",async (req,res)=>{
 /* 
 electron exclusive, csv style
 */
-router.post("/navigation/export/:type(transaction|) ",async (req,res)=>{
+router.get("/navigation/export/:type(transaction|price|stock|stockDynamic)",async (req,res)=>{
     let {company_id} = req.body;
     let {type} = req.params;
-    console.log(type);
     
-    res.end();
-    return;
 
     try {
         let item_query = sql.format(`
             select id,name from item_t 
             where company_id = ?    
-        `,1);
+        `,company_id);
         let ta_query = sql.format(`
             select time,item_id,count from transaction_t 
             where company_id = ?    
             order by time desc
-        `,1);
+        `,company_id);
         let stock_query = sql.format(`
-            select time,item_id,price from stock_t 
+            select time,item_id,price,stock from stock_t 
             where company_id = ? 
             order by time desc   
-        `,1);
+        `,company_id);
 
         /** @type {{id:string,name:string}[]}  */
         let item_list = await query(item_query);
         /** @type {{time:Date,item_id:number,count:number}[]}  */
         let ta_list = await query(ta_query);
-        /** @type {{time:Date,item_id:number,price:number}[]}  */
+        /** @type {{time:Date,item_id:number,price:number,stock:number}[]}  */
         let stock_list = await query(stock_query);
 
-        //initializing
+        //from item_list
         /** @type {[number,String][]} */
         const item_name_list = item_list.map(v=>v.name)
         /** @type {number[]} */
         const item_id_list = item_list.map(v=>v.id)
         /** @type {[number,number][]} */
-        // const template = item_id_list.map(v=>[v,0]);
         item_list = null;
 
 
-
+        //from ta_list, creating the result table template
         /** @type {number[]} */
         let time_list = [...new Set(
             ta_list.map(v=>v.time.getTime())
         )]
-        let template = Object.fromEntries(
+        let result_table = Object.fromEntries(
             time_list.map(v=>[v,Object.fromEntries(
                 item_id_list.map(v=>[v,0])
             )])
         );
         
         
+        //--generating the table object
+        switch(type){
+            case "transaction":
+                ta_list.forEach(v=>{
+                    result_table[v.time.getTime()][v.item_id] = v.count
+                })    
+                
+                
+            break;
+            case "price":
+                stock_list.forEach(v=>{
+                    let item_id = v.item_id;
+                    let stock_time = v.time.getTime();
+                    let stock_price = v.price;
 
-        //------count table
-        let count_table = structuredClone(template)
-        ta_list.forEach(v=>{
-            count_table[v.time.getTime()][v.item_id] = v.count
-        })        
-        ta_list = null;
-        // console.log({count});//turn this into csv
+                    for(let ta_time in result_table){
+                        if(ta_time <= stock_time ) break;
+                        if(result_table[ta_time][item_id] != 0)continue;
+                        result_table[ta_time][item_id] = stock_price
+                    }   
+                })
+                
+            
+            break;
+            case "stock"://like transaction (simple copy)
+                result_table = Object.fromEntries(
+                    [...new Set(
+                        stock_list.map(v=>v.time.getTime())
+                    )]
+                    .map(
+                        v=>[v,Object.fromEntries(
+                            item_id_list.map(v=>[v,'-'])
+                        )]
+                    )
+                )
+                
+                stock_list.forEach(v=>{
+                    result_table[v.time.getTime()][v.item_id] = v.stock;
+                })
+            break;
+            case "stockDynamic":
 
-        //-----price table 
-        let price_table = structuredClone(template);
-        stock_list.forEach(v=>{
-            let item_id = v.item_id;
-            let stock_time = v.time.getTime();
-            let stock_price = v.price;
+                //transaction summary
+                let transaction_table = structuredClone(result_table);
+                ta_list.forEach(v=>{
+                    transaction_table[v.time.getTime()][v.item_id] = v.count
+                })    
+                
+                //marking everytime stock is set
+                time_list.reverse();
+                stock_list.reverse().forEach(v => {
+                    let {stock,item_id} = v
+                    let changes_time = v.time.getTime();
+                    
+                    let ta_time = 0;
+                    time_list.some(v=>{
+                        if(v<changes_time)return false;
+                        ta_time = v;
+                        return true;
+                    })
+                    if(ta_time != 0) result_table[ta_time][item_id] = stock
+                });
+                
 
-            for( let ta_time in price_table){
-                if(ta_time <= stock_time ) break;
-                if(price_table[ta_time][item_id] != 0)continue;
-                price_table[ta_time][item_id] = stock_price
-            }   
-        })
-        stock_list = null;
-        // console.log(price);
+                let last_time = null;
+                time_list.forEach(curr_time=>{//curr_time ascending 
+                    item_id_list.forEach(curr_id=>{
+                        
+                        if(result_table[curr_time][curr_id] == 0){
+                            console.log(curr_time,curr_id,'zero',result_table[last_time]?.[curr_id]??0,transaction_table[curr_time][curr_id]);
 
-        
+                            result_table[curr_time][curr_id] = 
+                            (result_table[last_time]?.[curr_id]??0) - transaction_table[curr_time][curr_id]
+                        } else {
+                            console.log(curr_time,curr_id,result_table[curr_time][curr_id]);
+                            result_table[curr_time][curr_id] -= transaction_table[curr_time][curr_id]
+                        }
+                    })
+                    last_time = curr_time;
+                })
+                console.log(result_table);
+            break;
+        }
+
+
         //------creating the csv
         function time2str(dateObj){
             return dateObj.getFullYear().toString().padStart(4,'0')
@@ -780,36 +835,23 @@ router.post("/navigation/export/:type(transaction|) ",async (req,res)=>{
             +':'+dateObj.getMinutes().toString().padStart(2,'0')
             +':'+dateObj.getSeconds().toString().padStart(2,'0')
         }
-        let file = fs.createWriteStream(path.join(__dirname,'mycsv.csv'))      
-        file.write(["time",...item_name_list].join(','))
-        file.write('\n')
 
-        // //---transaction csv
-        // time_list.forEach(ta_time=>{
-        //     file.write(    
-        //         `${time2str(new Date(ta_time))},` + 
-        //         Object.values(count_table[ta_time]).join(',') + 
-        //         '\n'
-        //     )
-            
-        // })
-
-        //---price csv
-        time_list.forEach(ta_time=>{
-            file.write(    
+        res.write(["time",...item_name_list].join(','))
+        res.write('\n')
+        Object.keys(result_table).forEach(ta_time=>{
+            ta_time = Number(ta_time);
+            res.write(    
                 `${time2str(new Date(ta_time))},` + 
-                Object.values(price_table[ta_time]).join(',') + 
+                Object.values(result_table[ta_time]).join(',') + 
                 '\n'
             )
             
         })
-        
-        
-
-        file.close();
+        res.end()
         
     } catch (error) {
-        
+        console.log(error);
+        res.end(Response.fail)
     }
 
 

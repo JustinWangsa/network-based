@@ -26,8 +26,15 @@ function dump(err,result){
 // let {time, ...data} = {time:"mytime",0:12,3:123};
 // console.log(time);
 // console.log(data);
+let a = {
+    d :{c:1}
+}
+let b = "b", c = "c";
+console.log(a);
+console.log(a[b]?.[c]??"null val");
+console.log(a[b][c]);
 
-hhh()
+
 async function hhh(){
     console.log("processing");
 
