@@ -23,10 +23,7 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-// app.use((req,res,next)=>{
-//   console.log(`----${req.url}`);
-//   next();
-// })
+
 app.use(logger('dev'));
 app.use(fileUpload());// req.files
 app.use(express.json());//"application/json" -> req.body
@@ -38,6 +35,15 @@ app.use(session({
   resave:true,
   saveUninitialized:true,
 }));
+app.use((req,res,next)=>{
+  res.header('Access-Control-Allow-Origin','http://127.0.0.1:5500')// the usual live server
+  res.header('Access-Control-Allow-Methods','GET,POST')
+  res.header('Access-Control-Allow-Headers','Content-Type, Authorization')
+  // res.header('Access-Control-Allow-Headers','*')
+  
+  console.log(req.body);
+  next();
+})
 //TODO session store (company_id)
 //for now we will use default server-side session storage, MemoryStore //FIXME
 
