@@ -12,125 +12,22 @@ desc transaction_t;
 
 select "------------specific code-------------" \G;
 
--- select * 
--- from (
---     select 
---         t.time as ttime,
---         t.item_id,
---         t.count,
---         s.time as stime,
---         s.price,
---         dense_rank() over(
---             partition by ttime,item_id
---             order by stime desc
---         ) as rank
---     from (
---         select * from transaction_t
---         where company_id = 1
---     ) as t
---     join (
---         select * from stock_t
---     ) as s 
---     on 
---         t.company_id = s.company_id and
---         t.item_id = s.item_id and
---         t.time >= s.time
---     order by ttime
--- ) as q
--- where q.rank = 1
--- ;
-
 set @company_id = 1;
 
--- company transaction
--- select * from transaction_t
--- where company_id = @company_id
--- ;
+-- how to concat/group_concat
+-- case when then else end
+-- most recent price
+    -- select * from company_t 
+    -- into outfile 'D:/tugas/3_1/NetworkApp/Final/Server/server/Ztesting/mycsv.csv'
+    --     fields terminated by ',' enclosed by '"'
+    --     lines terminated by '\n'
+    -- ;
 
 
--- company price history
--- select 
---     time,
---     item_id,
---     price
--- from stock_t
--- where company_id = @company_id
--- ;
-
-
--- join transaction and price 
--- select 
---     t.time as ttime,
---     t.item_id,
---     t.count,
---     s.time as stime,
---     s.price,
---     dense_rank() over (
---         partition by ttime,item_id
---         order by stime desc
---     ) as rank
--- from (
---     select 
---         time,
---         item_id,
---         count
---     from transaction_t 
---     where company_id = @company_id
--- ) as t
--- join (
---     select 
---         time,
---         item_id,
---         price
---     from stock_t
---     where company_id = @company_id
--- ) as s
--- on 
---     s.item_id = t.item_id and
---     s.time <= t.time 
--- order by ttime
-
--- only rank 1
-select 
-    ttime as time,
-    item_id,
-    count,
-    price
-from (
-    select 
-        t.time as ttime,
-        t.item_id,
-        t.count,
-        s.time as stime,
-        s.price,
-        dense_rank() over (
-            partition by ttime,item_id
-            order by stime desc
-        ) as rank
-    from (
-        select 
-            time,
-            item_id,
-            count
-        from transaction_t 
-        where company_id = @company_id
-    ) as t
-    join (
-        select 
-            time,
-            item_id,
-            price
-        from stock_t
-        where company_id = @company_id
-    ) as s
-    on 
-        s.item_id = t.item_id and
-        s.time <= t.time 
-    order by ttime
-) as t
-where rank = 1
+-- select * from stock_t where company_id=@company_id;
 
 ;
+
 
 
 select "---------------data Dump-------------" \G;

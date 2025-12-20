@@ -690,12 +690,149 @@ router.get("/summary_page/high_level",async (req,res)=>{
 })
 
 /* 
-electron exclusive, still unclear
+electron exclusive, csv style
 */
-router.post("/navigation/export",async (req,res)=>{
+router.post("/navigation/export/:type(transaction|) ",async (req,res)=>{
+    let {company_id} = req.body;
+    let {type} = req.params;
+    console.log(type);
     
-    
-    
+    res.end();
+    return;
+
+    try {
+        let item_query = sql.format(`
+            select id,name from item_t 
+            where company_id = ?    
+        `,1);
+        let ta_query = sql.format(`
+            select time,item_id,count from transaction_t 
+            where company_id = ?    
+            order by time desc
+        `,1);
+        let stock_query = sql.format(`
+            select time,item_id,price from stock_t 
+            where company_id = ? 
+            order by time desc   
+        `,1);
+
+        /** @type {{id:string,name:string}[]}  */
+        let item_list = await query(item_query);
+        /** @type {{time:Date,item_id:number,count:number}[]}  */
+        let ta_list = await query(ta_query);
+        /** @type {{time:Date,item_id:number,price:number}[]}  */
+        let stock_list = await query(stock_query);
+
+        //initializing
+        /** @type {[number,String][]} */
+        const item_name_list = item_list.map(v=>v.name)
+        /** @type {number[]} */
+        const item_id_list = item_list.map(v=>v.id)
+        /** @type {[number,number][]} */
+        // const template = item_id_list.map(v=>[v,0]);
+        item_list = null;
+
+
+
+        /** @type {number[]} */
+        let time_list = [...new Set(
+            ta_list.map(v=>v.time.getTime())
+        )]
+        let template = Object.fromEntries(
+            time_list.map(v=>[v,Object.fromEntries(
+                item_id_list.map(v=>[v,0])
+            )])
+        );
+        
+        
+
+        //------count table
+        let count_table = structuredClone(template)
+        ta_list.forEach(v=>{
+            count_table[v.time.getTime()][v.item_id] = v.count
+        })        
+        ta_list = null;
+        // console.log({count});//turn this into csv
+
+        //-----price table 
+        let price_table = structuredClone(template);
+        stock_list.forEach(v=>{
+            let item_id = v.item_id;
+            let stock_time = v.time.getTime();
+            let stock_price = v.price;
+
+            for( let ta_time in price_table){
+                if(ta_time <= stock_time ) break;
+                if(price_table[ta_time][item_id] != 0)continue;
+                price_table[ta_time][item_id] = stock_price
+            }   
+        })
+        stock_list = null;
+        // console.log(price);
+
+        
+        //------creating the csv
+        function time2str(dateObj){
+            return dateObj.getFullYear().toString().padStart(4,'0')
+            +'-'+(dateObj.getMonth()+1).toString().padStart(2,'0')
+            +'-'+dateObj.getDate().toString().padStart(2,'0')
+            +' '+dateObj.getHours().toString().padStart(2,'0')
+            +':'+dateObj.getMinutes().toString().padStart(2,'0')
+            +':'+dateObj.getSeconds().toString().padStart(2,'0')
+        }
+        let file = fs.createWriteStream(path.join(__dirname,'mycsv.csv'))      
+        file.write(["time",...item_name_list].join(','))
+        file.write('\n')
+
+        // //---transaction csv
+        // time_list.forEach(ta_time=>{
+        //     file.write(    
+        //         `${time2str(new Date(ta_time))},` + 
+        //         Object.values(count_table[ta_time]).join(',') + 
+        //         '\n'
+        //     )
+            
+        // })
+
+        //---price csv
+        time_list.forEach(ta_time=>{
+            file.write(    
+                `${time2str(new Date(ta_time))},` + 
+                Object.values(price_table[ta_time]).join(',') + 
+                '\n'
+            )
+            
+        })
+        
+        
+
+        file.close();
+        
+    } catch (error) {
+        
+    }
+
+
+})
+router.post("/navigation/export/price",async (req,res)=>{})
+
+router.post("/navigation/export/stock",async (req,res)=>{
+// SELECT * FROM _table INTO OUTFILE '/tmp,csv'
+//             FIELDS TERMINATED BY ','
+//             ENCLOSED BY '"'
+//             LINES TERMINATED BY '\n';    
+
+    try{
+        res.end(Response.success);//TODO placeholder
+    } catch(e){
+        console.log(e);
+        res.end(Response.fail);
+    }
+})
+
+
+//current item price and stock
+router.post("/navigation/export/item",async (req,res)=>{
     try{
         res.end(Response.success);//TODO placeholder
     } catch(e){
