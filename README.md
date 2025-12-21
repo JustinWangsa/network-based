@@ -1,22 +1,35 @@
 
 
->request:
-- minta foto default buat item yang belum punya foto
-
-> to start the server:
-- clone the repo by typing: git clone https://github.com/JustinWangsa/network-based.git -b Server server
-- go to the server directory by typing: cd server
-- install dependency by typing: npm install
-- then run by typing: npm run start
+# to start the server:
+- clone the branch
+    ```bash
+    git clone https://github.com/JustinWangsa/network-based.git -b Server server
+    ```
+- go to the server directory and install dependency 
+    ```bash
+    cd server;
+    npm install
+    ```
+- run server
+    ```bash
+    npm run start
+    ```
 - server will be listening to http://localhost:3000
+- (for page serving capability) in the [index.js](server/routes/index.js), the varaible [client_browserFolder] need to be assign the folder location of the front end resources, relative to the [server](server) folder( ./ refer to file inside the server folder).
+    ```js
+    const client_browserFolder = 'path/to/client_browser';
+    ```
+- (for database api capability) set up a mariadb/mysql database 
+    - listening to the default port (3306)
+    - has an account with:{username:root, password:root}
+    - has a database name test_db
+    - run the sql code in (server/Ztesting/createTable.sql) in mariadb/mysql
+    - (optionally) populate the database with data by running the sql code in (server/Ztesting/populate.sql) in mariabd/mysql
 
-> page serving API preface:
-- in the [index.js](server/routes/index.js), the varaible [client_browserFolder] need to be assign the folder location of the front end resources, relative to the [server](server) folder( ./ refer to file inside the server folder)
 
 
+# Database API guide
 > DB managing API preface:
-- database host:localhost, user:root, password:root, dbname:test_db
-    (value subject to change)
 - API behaviour (if documentation omit a behaviour, that api will follow the default behaviour defined below):
     - return "err from sql" or "success"
     - input 
