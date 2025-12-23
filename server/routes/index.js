@@ -3,7 +3,7 @@ var router = express.Router();
 const fs = require('node:fs');
 const path = require('node:path');
 
-const client_browserFolder = '../client_browser';
+const client_browserFolder = '../../client_browser';
 
 
 
