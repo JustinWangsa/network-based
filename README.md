@@ -17,7 +17,8 @@
 - server will be listening to http://localhost:3000
 - (for page serving capability) in the [index.js](server/routes/index.js), the varaible [client_browserFolder] need to be assign the folder location of the front end resources, relative to the [server](server) folder( ./ refer to file inside the server folder).
     ```js
-    const client_browserFolder = 'path/to/client_browser';
+    const client_browserFolder = 'path/to/client_browser';//the folder location of the front end resources relative to the server folder
+    const indexfile = '/src/views/Cashier/cashier.html';//the folder location of the index.html relative to the client_browser folder
     ```
 - (for database api capability) set up a mariadb/mysql database 
     - listening to the default port (3306)

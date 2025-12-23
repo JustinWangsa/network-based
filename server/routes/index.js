@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const client_browserFolder = '../../client_browser';
+const indexfile = '/src/views/Cashier/cashier.html';
 
 
 
@@ -11,7 +12,7 @@ const client_browserFolder = '../../client_browser';
 router.get('/', function(req, res) {
   // res.render('index', { title: 'Express' });
 
-  fs.createReadStream('../client_browser/src/views/Cashier/cashier.html').pipe(res)
+  fs.createReadStream(path.join(client_browserFolder,indexfile)).pipe(res)
   
 });
 
