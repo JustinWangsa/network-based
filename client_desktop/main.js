@@ -33,7 +33,8 @@ ipcMain.handle('select save location',async (e)=>{
     try{
         let {canceled,filePath}= await dialog.showSaveDialog({
             buttonLabel:"save",
-            title:"select a location to save the file"
+            title:"select a location to save the file",
+            // defaultPath:app.getPath('downloads')
         })
         
         if(!filePath||canceled) return 1;
@@ -53,6 +54,7 @@ ipcMain.handle('save file', (e,arg)=>{
         file.close();
         return 0;
     } catch(e){
+        console.log(e);
         return 1;
     }
     

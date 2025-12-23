@@ -1,34 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- <script src="./script.js" type="module"></script> -->
     <title>Document</title>
 </head>
 <body>
-    <h1>works</h1>
-    <!-- <button onclick="dostuff()">clikc me</button> -->
-    <!-- <button onclick="dostuff2()">clikc me 2</button> -->
-    <!-- <button onclick="api.dostuff2()">clikc me 2</button> -->
-    <button onclick="electronAPI.export_stock()">save file</button>
-    <a href="./test2.html">other page</a>
+    <button onclick="electronAPI.export('price')">save file</button>
 </body>
 <script>
     console.log(electronAPI?"is an electron app":"not an electron app");
 
-
+    //temporary login
     let formbody = new FormData();
     formbody.append('name','google_cs')
     formbody.append('password','google_cs')
     
-    fetch('http://localhost:3000/db/login_page/log_in',{
-        method:"POST",
-        body:formbody
-    })
-    .then(v=>v.text())
-    .then(v=>console.log("from html: ",v))
-
     fetch('http://localhost:3000/db/login_page/log_in',{
         method:"POST",
         body:formbody
