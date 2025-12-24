@@ -430,11 +430,21 @@ router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
             on i.id = s.item_id and i.company_id = s.company_id
             where s.time = s.recent
         `,company_id)
+        
+        result = result.map(v=>({
+            id:v.id,
+            name:v.name,
+            image:v.image.toString('base64'),
+            currentStock:v.currentStock,
+            price:v.price,
+        }))
+        
 
             
             //TODO start from here
         res.header('Content-Type','application/json')
         res.end(JSON.stringify(result));
+        
     } catch (error) {
         console.log(error);
         res.end(Response.fail)

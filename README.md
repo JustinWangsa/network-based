@@ -33,6 +33,10 @@
 > DB managing API preface:
 - API behaviour (if documentation omit a behaviour, that api will follow the default behaviour defined below):
     - return "err from sql" or "success"
+    - return image to be put it in an <image> change the src = 
+    ```js
+        'data:image;base64,'+image
+    ```
     - input 
         - to send data, use multipart/formdata as content type (the default type for FormData in js and default for fetch)
         - default value will be interpreted as '' or 0 depending on the type

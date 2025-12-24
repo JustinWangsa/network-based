@@ -12,6 +12,12 @@ Content-Disposition: form-data; name="name"
 google_cs
 --bababa--
 
+
+
+### /stock_page/fetch_item_list
+get  http://localhost:3000/db/stock_page/fetch_item_list HTTP/1.1/
+
+
 ### /summary_page/high_level
 get  http://localhost:3000/db/summary_page/high_level HTTP/1.1/
 
@@ -41,10 +47,6 @@ Content-Disposition: form-data; name="data"
 {"2":50,"3":90}
 --bababa--
 
-
-
-### /stock_page/fetch_item_list
-get  http://localhost:3000/db/stock_page/fetch_item_list HTTP/1.1/
 
 
 
