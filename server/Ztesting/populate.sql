@@ -26,16 +26,16 @@ insert into user_t set
     isManager = false,name = "apple_cs",password = SHA1("apple_cs");
 
 
-insert into item_t(company_id,name,currentStock,image) values
-    (1,"a",1000,''),
-    (1,"b",2000,''),
-    (1,"c",3000,''),
-    (2,"a",4000,''),
-    (2,"b",5000,''),
-    (2,"c",6000,''),
-    (3,"a",7000,''),
-    (3,"b",8000,''),
-    (3,"c",9000,'')
+insert into item_t(company_id,name,type,currentStock,image) values
+    (1,"a","food",1000,''),
+    (1,"b","food",2000,''),
+    (1,"c","drnk",3000,''),
+    (2,"a","food",4000,''),
+    (2,"b","food",5000,''),
+    (2,"c","drnk",6000,''),
+    (3,"a","food",7000,''),
+    (3,"b","food",8000,''),
+    (3,"c","drnk",9000,'')
 ;
 insert into stock_t(company_id,time,item_id,stock,price) values
     (1,"2020-12-11 16:00:00",1,10,100),

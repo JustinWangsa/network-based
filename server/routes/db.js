@@ -4,7 +4,6 @@ const router = Router();
 const fs = require("node:fs");
 
 const sql = require('mysql');
-const { json } = require('node:stream/consumers');
 const path = require('node:path');
 const con = sql.createConnection({
     host:"localhost",
@@ -97,29 +96,13 @@ function query(qry,value){
 //TODO convert all con.query into query
 
 //TODO above section that include manager function, router.use(if not manager, res.end(fail) )
-router.get('/admin/dropTable',async (req,res)=>{
-    try{
 
-        await query("drop table if exists stock_t");
-        await query("drop table if exists transaction_t");
-        await query("drop table if exists user_t");
-        await query("drop table if exists item_t");
-        await query("drop table if exists company_t");
-        
-        console.log("------dropped all table");
-        res.end(Response.success);
-    } catch (e){
-        console.log(e);
-        res.end(Response.fail);
-    }
-    
-    
-})
-router.get('/admin/createTable',async (req,res)=>{
+router.get('/admin/:sqlCommand(createTable|dropTable)',async (req,res)=>{
+    let sqlfile = req.params.sqlCommand;
 
     try{
 
-        let all_query = fs.readFileSync(path.join(__dirname,'../init/createTable.sql')  )
+        let all_query = fs.readFileSync(path.join(__dirname,`../init/${sqlfile}.sql`)  )
             .toString()
             .split(';')
         ;
@@ -130,7 +113,7 @@ router.get('/admin/createTable',async (req,res)=>{
             }
         }
         
-        console.log("------created all table ");
+        console.log(`------------ ${sqlfile} success`);
         res.end(Response.success);
     } catch(e){
         console.log(e);
@@ -138,6 +121,8 @@ router.get('/admin/createTable',async (req,res)=>{
     }
     
 })
+
+
 
 //result: current companyName 
 router.get('/admin/WhoAmI',async (req,res)=>{
