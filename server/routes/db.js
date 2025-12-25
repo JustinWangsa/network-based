@@ -265,27 +265,27 @@ router.post("/stock_page/new_item",async (req,res)=>{//TODO support multiple ite
         company_id,//from session
 
         name,
+        type,
         stock,
         price
     } = req.body;
     const image = req.files?.icon?.data ?? '';
-    
-    console.log({
-        name,
-        stock,
-        price,
-        company_id,
-        image:image.toString('base64').substring(0,10),
-    });
 
     try{ 
         let theQuery = sql.format(`
             insert into item_t set 
                 company_id = ?,
                 name = ?,
+                type=?,
                 currentStock = ?,
                 image = ? 
-        `,[company_id,name,Number(stock),image]);
+        `,[
+            company_id,
+            name,
+            type,
+            Number(stock),
+            image,
+        ]);
         console.log(theQuery.substring(0,200));
         let okPacket = await query(theQuery);
         item_id = okPacket.insertId;
@@ -321,20 +321,13 @@ router.post("/stock_page/update_item",async (req,res)=>{
 
         item_id, 
         name,
+        type,
         stock,
         price
     } = req.body;
     const image = req.files?.icon?.data ?? '';
     let currentStock = stock;
 
-    console.log({
-        company_id,
-        item_id,
-        name,
-        stock,//either both filled or both empty
-        price,
-        image:image.toString('base64').substring(0,10),
-    });
 
     if( (stock=='' && price!='') || (stock!='' && price=='') ){
         console.log('------fail, stock and price have holes');
@@ -371,6 +364,7 @@ router.post("/stock_page/update_item",async (req,res)=>{
         input = [];
         changes = [];
         optAppend("name",name);
+        optAppend("type",type);
         optAppend("currentStock",currentStock);//if stock is null, this doesnt do anything
         optAppend("image",image);
         
@@ -405,6 +399,7 @@ router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
             select 
                 i.id,
                 i.name,
+                i.type,
                 i.image,
                 i.currentStock,
                 s.price
@@ -420,13 +415,20 @@ router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
             where s.time = s.recent
         `,company_id)
         
-        result = result.map(v=>({
-            id:v.id,
-            name:v.name,
-            image:v.image.toString('base64'),
-            currentStock:v.currentStock,
-            price:v.price,
-        }))
+        result = result.map(v=>{
+            let {image, ...original} = v;
+            original["image"] = image.toString('base64')
+            return original;
+            // ({
+            
+            //     id:v.id,
+            //     name:v.name,
+            //     name:v.name,
+            //     image:v.image.toString('base64'),
+            //     currentStock:v.currentStock,
+            //     price:v.price,
+            // })
+        })
         
 
             

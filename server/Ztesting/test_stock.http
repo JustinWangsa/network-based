@@ -16,6 +16,65 @@ google_cs
 --bababa--
 
 
+### /stock_page/update_item 
+POST  http://localhost:3000/db/stock_page/update_item HTTP/1.1/
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="item_id"
+
+10
+--bababa
+Content-Disposition: form-data; name="name"
+
+hhh
+--bababa
+Content-Disposition: form-data; name="type"
+
+hhh
+--bababa
+Content-Disposition: form-data; name="icon"; filename="bbb.png"
+Content-Type: image/png
+
+
+--bababa
+Content-Disposition: form-data; name="stock"
+
+222
+--bababa
+Content-Disposition: form-data; name="price"
+
+222
+--bababa--
+
+### /stock_page/new_item 
+POST  http://localhost:3000/db/stock_page/new_item HTTP/1.1/
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="name"
+
+slkdaw
+--bababa
+Content-Disposition: form-data; name="type"
+
+dsrt
+--bababa
+Content-Disposition: form-data; name="icon"; filename="bbb.png"
+Content-Type: image/png
+
+< ./sampleImg.png
+--bababa
+Content-Disposition: form-data; name="stock"
+
+12
+--bababa
+Content-Disposition: form-data; name="price"
+
+56
+--bababa--
+
+
 
 ### /stock_page/fetch_item_list
 get  http://localhost:3000/db/stock_page/fetch_item_list HTTP/1.1/
@@ -53,53 +112,3 @@ Content-Disposition: form-data; name="data"
 
 
 
-
-### /stock_page/update_item 
-POST  http://localhost:3000/db/stock_page/update_item HTTP/1.1/
-Content-Type: multipart/form-data; boundary=bababa
-
---bababa
-Content-Disposition: form-data; name="item_id"
-
-3
---bababa
-Content-Disposition: form-data; name="name"
-
-hhh
---bababa
-Content-Disposition: form-data; name="icon"; filename="bbb.png"
-Content-Type: image/png
-
-
---bababa
-Content-Disposition: form-data; name="stock"
-
-1
---bababa
-Content-Disposition: form-data; name="price"
-
-1111
---bababa--
-
-### /stock_page/new_item 
-POST  http://localhost:3000/db/stock_page/new_item HTTP/1.1/
-Content-Type: multipart/form-data; boundary=bababa
-
---bababa
-Content-Disposition: form-data; name="name"
-
-slkdaw
---bababa
-Content-Disposition: form-data; name="icon"; filename="bbb.png"
-Content-Type: image/png
-
-< ./sampleImg.png
---bababa
-Content-Disposition: form-data; name="stock"
-
-12
---bababa
-Content-Disposition: form-data; name="price"
-
-56
---bababa--

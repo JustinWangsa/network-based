@@ -12,8 +12,8 @@ create table user_t(
 create table item_t(
     id      int AUTO_INCREMENT Key,
     company_id int references company_t (id),
-    type    varchar(256),
     name    varchar(256),
+    type    varchar(256),
     image   longblob default null,
     currentStock   int
     

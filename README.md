@@ -49,7 +49,7 @@
 
 <br>
 
-### admin API (this is for testing, not used in the final product):
+## admin API (this is for testing, not used in the final product):
 >get http://localhost:3000/testing/
 - this will return a number, if consecutiv call return a different number, then session is working
 > get /db/admin/dropTable. 
@@ -62,7 +62,7 @@
 
 <br>
 
-### non-logid API (do not require login):
+## non-logid API (do not require login):
 > post /db/login_page/sign_up
 - input
     - companyName
@@ -92,10 +92,11 @@
     
 <br>
 
-### login-required API:
+## login-required API:
 > post /db/stock_page/new_item
 - input: 
     - name. 
+    - type
     - stock. this is the current stock 
     - price
     - icon. 
@@ -109,6 +110,7 @@
 - input
     - item_id. 
     - name. if null/'', it will not update that column in the table.
+    - type. if null/'', it will not update that column in the table.
     - icon. if null/'', it will not update that column in the table.
     - stock. 
     - price. (make sure stock and price are either both empty or both filled)
@@ -119,7 +121,7 @@
 
 > get /db/stock_page/fetch_item_list
 - return: 
-    {id,name,image,currentStock,price}[]
+    {id,name,type,image,currentStock,price}[]
 - it will return all item and their data for company that is loged in. the price will always be from the newest record
 
 > post /db/transaction_page/new_transaction
