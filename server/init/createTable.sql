@@ -1,14 +1,3 @@
-
-
-
-use test_db;
-
-drop table if exists stock_t;
-drop table if exists transaction_t;
-drop table if exists user_t;
-drop table if exists item_t;
-drop table if exists company_t;
-
 create table company_t(
     id      int AUTO_INCREMENT key,
     name    varchar(1024) unique
@@ -23,6 +12,7 @@ create table user_t(
 create table item_t(
     id      int AUTO_INCREMENT Key,
     company_id int references company_t (id),
+    type    varchar(256),
     name    varchar(256),
     image   longblob default null,
     currentStock   int
@@ -45,15 +35,3 @@ create table transaction_t(
 
     primary key (company_id,time,item_id)
 );
--- show tables;
--- desc company_t;
--- desc user_t;
--- desc item_t;
--- desc transaction_t;
--- desc stock_t;
--- -------------------------------------------------------
-
-
-
-
--- mariadb -uroot -proot -t < D:/tugas/3_1/NetworkApp/Final2/Server/server/Ztesting/createTable.sql

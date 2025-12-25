@@ -5,6 +5,7 @@ const fs = require("node:fs");
 
 const sql = require('mysql');
 const { json } = require('node:stream/consumers');
+const path = require('node:path');
 const con = sql.createConnection({
     host:"localhost",
     user:"root",
@@ -14,27 +15,68 @@ const con = sql.createConnection({
 const Response = {
     success:"success",
     fail:"err from sql"
-} //TODO convert all response into json {status:success}, use middleware to res.header(json)
-function makeErrHandler(taskCount,res,successMsg=""){
-    const task = taskCount;
-    let completed = 0;
-    let fail = 0;
-    return function errHandler(err){
-        completed++;
-        if(err){
-            fail++;
-            console.log(err)
-        }
+} 
 
-        if(completed == task){
-            if(fail == 0) {
-                console.log(successMsg);
-                res.end(Response.success)
-            }
-            else res.end(Response.fail);
-        }
-    }
-}
+// deprecated
+// const db = {
+//     company_t:{
+//         _:'company_t',
+//         id:{
+//             _:"id",
+//             prop:'int AUTO_INCREMENT key'
+//         },
+//         name:{
+//             _:"name",
+//             prop:'varchar(1024) unique'
+//         },    
+//         prop:[]
+//     },
+//     user_t:{
+//         _:'user_t',
+//         company_id:{_:"company_id",prop:"int references company_t (id)"},
+//         isManager:{_:"isManager",prop:"bool"},
+//         /** suppose to be unique, but doing so cause virtual bug*/
+//         name:{_:"name",prop:"varchar(1024)"},
+//         /** sha1 is 160 bit, but this is hexed so 320 bit */
+//         password:{_:"password",prop:"binary(40)"},
+        
+//         prop:["primary key (company_id,isManager)"] 
+//     },
+//     item_t:{
+//         _:'item_t',
+//         id:{_:"id",prop:"int AUTO_INCREMENT Key"},
+//         company_id:{_:"company_id",prop:"int references company_t (id)"},
+//         /** was suppose to be unique but cause virtual to appear at password */
+//         name:{_:"name",prop:"varchar(256)"},
+//         /** a binary. when select, return a buffer need to be transalted into base64 */
+//         image:{_:"image",prop:"longblob default null"},
+//         currentStock:{_:"currentStock",prop:"int"},  
+//         prop:[] 
+//     },
+//     stock_t:{
+//         _:'stock_t',
+//         company_id:{_:"company_id",prop:"int references company_t (id)"},
+//         /** [YYYY-MM-DD hh:mm:ss] */
+//         time:{_:"time",prop:"datetime"},
+//         /** -- on delete restrict */
+//         item_id:{_:"item_id",prop:"int references item_t (id)"},
+//         stock:{_:"stock",prop:"int"},
+//         price:{_:"price",prop:"int"},
+//         prop:["primary key (company_id,time,item_id)"] 
+//     },
+//     transaction_t:{
+//         _:'transaction_t',
+//         company_id:{_:"company_id",prop:"int references company_t (id)"},
+//         /**[YYYY-MM-DD hh:mm:ss] */
+//         time:{_:"time",prop:"datetime"},
+//         /**on delete restrict */
+//         item_id:{_:"item_id",prop:"int references item_t (id)"},
+//         count:{_:"count",prop:"int"},
+//         prop:["primary key (company_id,time,item_id)"] 
+//     },
+
+
+// }
 
 
 /**
@@ -57,7 +99,7 @@ function query(qry,value){
 //TODO above section that include manager function, router.use(if not manager, res.end(fail) )
 router.get('/admin/dropTable',async (req,res)=>{
     try{
-        // const _E = makeErrHandler(5,res,"Table Drop Successfully")
+
         await query("drop table if exists stock_t");
         await query("drop table if exists transaction_t");
         await query("drop table if exists user_t");
@@ -74,57 +116,19 @@ router.get('/admin/dropTable',async (req,res)=>{
     
 })
 router.get('/admin/createTable',async (req,res)=>{
-    
 
     try{
 
-        await query(`
-            create table company_t(
-                id      int AUTO_INCREMENT key,
-                name    varchar(1024) unique
-            );    
-        `)
-        await query(`
-            create table user_t(
-                company_id  int references company_t (id),
-                isManager   bool ,
-                name        varchar(1024), -- suppose to be unique, but cause virtual bug
-                password    binary(40), -- sha1 is 160 bit, but this is hexed so 320 bit
-                primary key (company_id,isManager)
-            );
-        `)
-        await query(`
-            create table item_t(
-                id      int AUTO_INCREMENT Key,
-                company_id int references company_t (id),
-                name    varchar(256),
-                image   longblob default null,
-                currentStock   int
-                
-            );
-        `)// name must not be unique, block other company
-        await query(`
-            create table stock_t(
-                company_id int references company_t (id),
-                time    datetime, -- [YYYY-MM-DD hh:mm:ss]
-                item_id int references item_t (id), -- on delete restrict 
-                stock    int,
-                price   int,
-
-                primary key (company_id,time,item_id)
-            );
-        `)
-        await query(`
-            create table transaction_t(
-                company_id int references company_t (id),
-                time    datetime, -- [YYYY-MM-DD hh:mm:ss]
-                item_id int references item_t (id), -- on delete restrict
-                count   int,
-
-                primary key (company_id,time,item_id)
-            );
-        `)
-        
+        let all_query = fs.readFileSync(path.join(__dirname,'../init/createTable.sql')  )
+            .toString()
+            .split(';')
+        ;
+        for(let aQuery of all_query){
+            if(aQuery){
+                console.log(aQuery);
+                await query(aQuery);
+            }
+        }
         
         console.log("------created all table ");
         res.end(Response.success);
