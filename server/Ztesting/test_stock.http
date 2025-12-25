@@ -1,3 +1,6 @@
+### testing
+get http://localhost:3000/testing/
+
 ### login_page/log_in -- correct
 POST  http://localhost:3000/db/login_page/log_in HTTP/1.1/
 Content-Type: multipart/form-data; boundary=bababa

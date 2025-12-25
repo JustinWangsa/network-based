@@ -48,12 +48,13 @@ router.all('/getImg',(req,res)=>{
 })
 
 router.all('/', (req,res)=>{
-    console.log({"a":1,"b":2});
+    req.session.a = (req.session.a??1000)+1;
+    console.log("---cookie test:",req.session.a);
     console.log("---header:",req.headers);
     console.log("---data:",req?.body);
     console.log("---filedata:",req?.files?.myfile?.data);
 
-    res.end();
+    res.end(req.session.a.toString());
 
    
     
