@@ -50,6 +50,8 @@
 <br>
 
 ### admin API (this is for testing, not used in the final product):
+>get http://localhost:3000/testing/
+- this will return a number, if consecutiv call return a different number, then session is working
 > get /db/admin/dropTable. 
 - drops the table
 - this is used in combination with create table to reset table data
