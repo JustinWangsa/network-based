@@ -14,8 +14,36 @@
     </form>
     
     <button onclick="myfunc()">click me</button>
+    <button onclick="testing()">cookie</button>
+    <button onclick="login()">login</button>
+    <button onclick="fetchlist()">fetch</button>
 
     <script>
+        async function login(){
+            let formbody = new FormData();
+            formbody.append("password","google_cs");
+            formbody.append("name","google_cs");
+            let data = await (
+                await fetch('http://localhost:3000/db/login_page/log_in',{
+                    method:"POST",
+                    credentials:"include",
+                    body:formbody
+                })
+            ).text()
+        }
+        async function fetchlist(){
+
+        }
+        async function testing(){
+            let aa = await (
+                await fetch('http://localhost:3000/testing',{
+                    credentials:"include"
+                })
+            ).text()
+            console.log(aa);
+        }
+
+
         document.getElementById('a').addEventListener("submit",function(e){
             e.preventDefault();
 

@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 // var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var cors = require('cors');
 
 
 //added
@@ -35,15 +36,20 @@ app.use(session({
   resave:true,
   saveUninitialized:true,
 }));
-app.use((req,res,next)=>{
-  res.header('Access-Control-Allow-Origin','http://127.0.0.1:5500')// the usual live server
-  res.header('Access-Control-Allow-Methods','GET,POST')
-  res.header('Access-Control-Allow-Headers','Content-Type, Authorization')
-  // res.header('Access-Control-Allow-Headers','*')
+app.use(cors({
+  origin:"http://localhost:5500",
+  credentials:true
+}))
+// app.use((req,res,next)=>{
+//   res.header('Access-Control-Allow-Origin','http://localhost:5500')// the usual live server
+//   res.header('Access-Control-Allow-Methods','GET,POST')
+//   res.header('Access-Control-Allow-Headers','Content-Type, Authorization')
+//   res.header('Access-Control-Allow-Credentials','Content-Type, Authorization')
+//   // res.header('Access-Control-Allow-Headers','*')
   
-  console.log(req.body);
-  next();
-})
+//   console.log(req.body);
+//   next();
+// })
 //TODO session store (company_id)
 //for now we will use default server-side session storage, MemoryStore //FIXME
 
