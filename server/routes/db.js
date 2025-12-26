@@ -216,7 +216,7 @@ router.post("/login_page/log_in",async (req,res)=>{
         else res.end(result[0]?.isManager?.toString());
 
     } catch (error) {
-        console.log(err); 
+        console.log(error); 
         res.end(Response.fail);
     }
     
