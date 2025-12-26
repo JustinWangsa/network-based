@@ -15,7 +15,12 @@
     npm run start
     ```
 - server will be listening to http://localhost:3000
-- **important** if you are using live server to debug, change the server host to localhost:5500, or else it will be blocked by cors
+- **important** if you are using live server to debug, change the server host to localhost:5500, or else it will be blocked by cors. and from the client side, fetch using these optionally 
+``` js
+    fetch('path/to/api',{
+        credentials:"include"//add this
+    })
+``` 
 - (for page serving capability) in the [index.js](server/routes/index.js), the varaible [client_browserFolder] need to be assign the folder location of the front end resources, relative to the [server](server) folder( ./ refer to file inside the server folder).
     ```js
     const client_browserFolder = 'path/to/client_browser';//the folder location of the front end resources relative to the server folder
