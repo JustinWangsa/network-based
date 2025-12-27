@@ -26,8 +26,17 @@ set @company_id = 1;
 
 -- select * from stock_t where company_id=@company_id;
 
-;
+-- select 
+--     id as _item_id,
+--     company_id,
+--     name,
+--     currentStock,
+--     expiry
+-- from item_t
+-- where isnull(expiry) 
+-- ;
 
+-- update item_t set expiry = now() where id = 1;
 
 
 select "---------------data Dump-------------" \G;
@@ -47,6 +56,7 @@ select
     company_id,
     name,
     currentStock,
+    expiry,
     LEFT(Hex(image),20)
 from item_t;
 select

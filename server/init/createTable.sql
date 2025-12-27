@@ -15,7 +15,8 @@ create table item_t(
     name    varchar(256),
     type    varchar(256),
     image   longblob default null,
-    currentStock   int
+    currentStock   int,
+    expiry datetime
     
 );
 create table stock_t(
