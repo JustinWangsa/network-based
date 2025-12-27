@@ -1,4 +1,8 @@
-
+# the delete patch
+> affected api:
+> /stock_page/fetch_item_list,
+> /transaction_page/fetch_item_list,
+> (added) /stock_page/delete_item
 
 # to start the server:
 - clone the branch
@@ -125,10 +129,20 @@
 - update item_t for that specific item, while it adds a new record in stock_t.
 - this will override the currentStock in item_t
 
+> post /db/stock_page/delete_item
+- input
+    - item_id_array. number[]
+- return 
+    number of item deleted (if this include item_id of already deleted item, it will still be added in the result)
+it marks item in item_id as deleted.
+
 > get /db/stock_page/fetch_item_list
 - return: 
-    {id,name,type,image,currentStock,price}[]
+    {id,name,type,image,currentStock,expiry,price}[]
 - it will return all item and their data for company that is loged in. the price will always be from the newest record
+- the front end will be responsible to show the item if the expiry date doesnt predate the context, and hide it otherwise
+    - for example, if an item is expired at 12:00, the transaction history occuring before 12:00 will still show this item, while history that occur after will not show it. 
+    - the menu the cashier use to make new transaction will only show the most up to date list of item, so the expiry date will always predate this context, thus all item that has an expiry date shouldn't be present 
 
 > post /db/transaction_page/new_transaction
 - input :

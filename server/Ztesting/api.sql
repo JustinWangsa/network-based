@@ -14,15 +14,6 @@ select "------------specific code-------------" \G;
 
 set @company_id = 1;
 
--- how to concat/group_concat
--- case when then else end
--- most recent price
-    -- select * from company_t 
-    -- into outfile 'D:/tugas/3_1/NetworkApp/Final/Server/server/Ztesting/mycsv.csv'
-    --     fields terminated by ',' enclosed by '"'
-    --     lines terminated by '\n'
-    -- ;
-
 
 -- select * from stock_t where company_id=@company_id;
 
@@ -34,7 +25,40 @@ set @company_id = 1;
 --     expiry
 -- from item_t
 -- where isnull(expiry) 
+;
+
+-- insert into item_t (company_id,name,expiry) values 
+--     (@company_id,'kkkkk',now()), 
+--     (@company_id,'aaa',now()), 
+--     (@company_id,'bbb',now()), 
+--     (@company_id,'ccc',now())
+-- returning 
+--     expiry
 -- ;
+
+select 
+    i.id,
+    -- s.price,
+    i.name
+from (
+    select * from item_t
+    where 
+        company_id = @company_id
+) as i
+-- left join (
+--     select 
+--         *, 
+--         max(time) over(
+--             partition by item_id
+--         ) as recent
+--     from stock_t 
+--     where 
+--         company_id = @company_id
+-- ) as s
+-- on i.id = s.item_id 
+-- where s.time = s.recent
+;
+
 
 -- update item_t set expiry = now() where id = 1;
 

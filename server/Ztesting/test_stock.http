@@ -15,6 +15,20 @@ Content-Disposition: form-data; name="name"
 google_cs
 --bababa--
 
+### /stock_page/fetch_item_list
+get  http://localhost:3000/db/stock_page/fetch_item_list HTTP/1.1/
+
+
+### /stock_page/delete_item 
+POST  http://localhost:3000/db/stock_page/delete_item HTTP/1.1/
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="item_id_array"
+
+[10,2,1]
+--bababa--
+
 
 ### /stock_page/update_item 
 POST  http://localhost:3000/db/stock_page/update_item HTTP/1.1/
@@ -76,8 +90,6 @@ Content-Disposition: form-data; name="price"
 
 
 
-### /stock_page/fetch_item_list
-get  http://localhost:3000/db/stock_page/fetch_item_list HTTP/1.1/
 
 
 ### /summary_page/high_level

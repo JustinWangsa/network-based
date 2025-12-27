@@ -260,7 +260,8 @@ router.use(function loginCheck(req,res,next){
 }
 result: if(true) item_id else null
 */
-router.post("/stock_page/new_item",async (req,res)=>{//TODO support multiple item at a time
+//TODO fix item default type into null
+router.post("/stock_page/new_item",async (req,res)=>{//FIXME support multiple item at a time
     let { 
         company_id,//from session
 
@@ -389,9 +390,38 @@ router.post("/stock_page/update_item",async (req,res)=>{
     
 })
 
-/* 
-return (json): [{id,name,image,currentStock,price}]
-*/
+//TODO delete_item
+router.post("/stock_page/delete_item",async (req,res)=>{
+    //TODO support multiple item at a time
+    let { 
+        company_id,//from session
+
+        item_id_array, //"[12,1,4,2,..]"
+    } = req.body;
+    let item_id_list = JSON.parse(item_id_array).join(',');
+
+    try{
+
+        let command = `
+            update item_t set expiry = now()
+            where 
+                id in (${item_id_list}) and
+                company_id = ${company_id}
+        `;
+        console.log(command);
+        let result = await query(command);
+        res.end(result.changedRows.toString());
+
+
+    } catch(e){
+        console.log(e)
+        res.end(Response.fail);
+    }
+    
+})
+
+
+
 router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
     let {company_id} = req.body;
     try {
@@ -402,37 +432,37 @@ router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
                 i.type,
                 i.image,
                 i.currentStock,
+                i.expiry,
                 s.price
             from (
                 select * from item_t
-                where company_id = ? 
+                where 
+                    company_id = ? 
+                    
             ) as i
             join (
-                select *, max(s.time) over(partition by s.item_id) as recent
-                from stock_t s
+                select 
+                    *, 
+                    max(time) over(
+                        partition by item_id
+                    ) as recent
+                from stock_t 
+                where 
+                    company_id = ?
             ) as s
-            on i.id = s.item_id and i.company_id = s.company_id
+            on i.id = s.item_id 
             where s.time = s.recent
-        `,company_id)
+        `,[company_id,company_id])
         
         result = result.map(v=>{
             let {image, ...original} = v;
             original["image"] = image.toString('base64')
             return original;
-            // ({
-            
-            //     id:v.id,
-            //     name:v.name,
-            //     name:v.name,
-            //     image:v.image.toString('base64'),
-            //     currentStock:v.currentStock,
-            //     price:v.price,
-            // })
         })
         
 
             
-            //TODO start from here
+            
         res.header('Content-Type','application/json')
         res.end(JSON.stringify(result));
         
@@ -443,6 +473,7 @@ router.get("/:_(stock_page|transaction_page)/fetch_item_list",async (req,res)=>{
 })
 
 //return [{id,currentstock},...] of each item sent
+//TODO if agreed upon, use returning to return time
 router.post("/transaction_page/new_transaction",async (req,res)=>{
     //{item_id:count,...}
     let data = JSON.parse(req.body.data);
@@ -857,32 +888,7 @@ router.get("/navigation/export/:type(transaction|price|stock|stockDynamic)",asyn
 
 
 })
-router.post("/navigation/export/price",async (req,res)=>{})
 
-router.post("/navigation/export/stock",async (req,res)=>{
-// SELECT * FROM _table INTO OUTFILE '/tmp,csv'
-//             FIELDS TERMINATED BY ','
-//             ENCLOSED BY '"'
-//             LINES TERMINATED BY '\n';    
-
-    try{
-        res.end(Response.success);//TODO placeholder
-    } catch(e){
-        console.log(e);
-        res.end(Response.fail);
-    }
-})
-
-
-//current item price and stock
-router.post("/navigation/export/item",async (req,res)=>{
-    try{
-        res.end(Response.success);//TODO placeholder
-    } catch(e){
-        console.log(e);
-        res.end(Response.fail);
-    }
-})
 
 module.exports = router
 
