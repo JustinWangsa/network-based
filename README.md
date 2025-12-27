@@ -3,6 +3,7 @@
 > /stock_page/fetch_item_list,
 > /transaction_page/fetch_item_list,
 > (added) /stock_page/delete_item
+> also update your item_t table to have expiry
 
 # to start the server:
 - clone the branch
@@ -137,12 +138,13 @@
 it marks item in item_id as deleted.
 
 > get /db/stock_page/fetch_item_list
-- return: 
-    {id,name,type,image,currentStock,expiry,price}[]
+- return: {id,name,type,image,currentStock,expiry,price}[]
+    - expiry is a Date type or null
 - it will return all item and their data for company that is loged in. the price will always be from the newest record
 - the front end will be responsible to show the item if the expiry date doesnt predate the context, and hide it otherwise
     - for example, if an item is expired at 12:00, the transaction history occuring before 12:00 will still show this item, while history that occur after will not show it. 
     - the menu the cashier use to make new transaction will only show the most up to date list of item, so the expiry date will always predate this context, thus all item that has an expiry date shouldn't be present 
+    -  the expiry date can be null
 
 > post /db/transaction_page/new_transaction
 - input :
