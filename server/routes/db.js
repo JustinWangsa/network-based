@@ -676,12 +676,14 @@ router.get("/summary_page/high_level",async (req,res)=>{
             select 
                 ttime as time,
                 item_id,
+                name,
                 count,
                 price
             from (
                 select 
                     t.time as ttime,
                     t.item_id,
+                    i.name,
                     t.count,
                     s.time as stime,
                     s.price,
@@ -704,15 +706,54 @@ router.get("/summary_page/high_level",async (req,res)=>{
                         price
                     from stock_t
                     where company_id = ${company_id}
-                ) as s
-                on 
-                    s.item_id = t.item_id and
-                    s.time <= t.time 
+                ) as s on 
+                    t.item_id = s.item_id and
+                    t.time >= s.time 
+                join item_t i on 
+                    t.item_id = i.id 
                 order by ttime
             ) as t
             where rank = 1
+            
         `)
-
+    //     select 
+    //     ttime as time,
+    //     item_id,
+    //     count,
+    //     price
+    // from (
+    //     select 
+    //         t.time as ttime,
+    //         t.item_id,
+    //         t.count,
+    //         s.time as stime,
+    //         s.price,
+    //         dense_rank() over (
+    //             partition by ttime,item_id
+    //             order by stime desc
+    //         ) as rank
+    //     from (
+    //         select 
+    //             time,
+    //             item_id,
+    //             count
+    //         from transaction_t 
+    //         where company_id = ${company_id}
+    //     ) as t
+    //     join (
+    //         select 
+    //             time,
+    //             item_id,
+    //             price
+    //         from stock_t
+    //         where company_id = ${company_id}
+    //     ) as s
+    //     on 
+    //         s.item_id = t.item_id and
+    //         s.time <= t.time 
+    //     order by ttime
+    // ) as t
+    // where rank = 1
         res.header("Content-Type","application/json");
         res.end(JSON.stringify(result));
     } catch(e){

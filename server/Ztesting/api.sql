@@ -14,54 +14,48 @@ select "------------specific code-------------" \G;
 
 set @company_id = 1;
 
-
--- select * from stock_t where company_id=@company_id;
-
--- select 
---     id as _item_id,
---     company_id,
---     name,
---     currentStock,
---     expiry
--- from item_t
--- where isnull(expiry) 
-;
-
--- insert into item_t (company_id,name,expiry) values 
---     (@company_id,'kkkkk',now()), 
---     (@company_id,'aaa',now()), 
---     (@company_id,'bbb',now()), 
---     (@company_id,'ccc',now())
--- returning 
---     expiry
--- ;
-
 select 
-    i.id,
-    -- s.price,
-    i.name
+    ttime as time,
+    item_id,
+    name,
+    count,
+    price
 from (
-    select * from item_t
-    where 
-        company_id = @company_id
-) as i
--- left join (
---     select 
---         *, 
---         max(time) over(
---             partition by item_id
---         ) as recent
---     from stock_t 
---     where 
---         company_id = @company_id
--- ) as s
--- on i.id = s.item_id 
--- where s.time = s.recent
+    select 
+        t.time as ttime,
+        t.item_id,
+        t.count,
+        i.name,
+        s.time as stime,
+        s.price,
+        dense_rank() over (
+            partition by ttime,item_id
+            order by stime desc
+        ) as rank
+    from (
+        select 
+            time,
+            item_id,
+            count
+        from transaction_t 
+        where company_id = @company_id
+    ) as t
+    join (
+        select 
+            time,
+            item_id,
+            price
+        from stock_t
+        where company_id = @company_id
+    ) as s on 
+        t.item_id = s.item_id and
+        t.time >= s.time 
+    join item_t i on 
+        t.item_id = i.id 
+    order by ttime
+) as t
+where rank = 1
 ;
-
-
--- update item_t set expiry = now() where id = 1;
-
 
 select "---------------data Dump-------------" \G;
 select 
