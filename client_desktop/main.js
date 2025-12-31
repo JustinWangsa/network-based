@@ -28,13 +28,27 @@ app.on('ready',()=>{
 })
 
 
-ipcMain.handle('select save location',async (e)=>{
+ipcMain.handle('select save location',async (e,arg)=>{
+    let time = new Date();
+    let timeStr = 
+        time.getFullYear().toString().padStart(4,'0')
+        + (time.getMonth()+1).toString().padStart(2,'0')
+        + time.getDate().toString().padStart(2,'0')
+        + time.getHours().toString().padStart(2,'0')
+        + time.getMinutes().toString().padStart(2,'0')
+        + time.getSeconds().toString().padStart(2,'0')
     
     try{
         let {canceled,filePath}= await dialog.showSaveDialog({
             buttonLabel:"save",
             title:"select a location to save the file",
-            defaultPath:app.getPath('downloads')+'/'+new Date().toISOString()
+            defaultPath:app.getPath('downloads')
+                +'/'
+                + arg.table
+                +'_'
+                + timeStr
+                +'.csv'
+            
         })
         
         if(!filePath||canceled) return 1;

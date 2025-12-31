@@ -3,7 +3,7 @@ const {ipcRenderer,contextBridge} = require('electron')
 contextBridge.exposeInMainWorld('electronAPI',{
     export: async (table)=>{
         let fileLocation = await ipcRenderer.invoke(
-            'select save location'
+            'select save location',{table}
         )
         if(fileLocation === 1)return "fail"
 
