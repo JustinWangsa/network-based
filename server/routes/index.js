@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const client_browserFolder = '../../client_browser';
-const indexfile = '/src/views/Cashier/cashier.html';
+const indexfile = '/src/views/login/login.html';
 
 
 
