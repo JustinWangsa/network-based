@@ -22,7 +22,7 @@ function createWindow(){
 
 app.on('ready',()=>{
     let window = createWindow()
-    window.webContents.openDevTools()
+    // window.webContents.openDevTools()
     // window.loadFile("test/test.html")
     window.loadURL("http://localhost:3000/")//require the http://
 })
@@ -34,7 +34,7 @@ ipcMain.handle('select save location',async (e)=>{
         let {canceled,filePath}= await dialog.showSaveDialog({
             buttonLabel:"save",
             title:"select a location to save the file",
-            // defaultPath:app.getPath('downloads')
+            defaultPath:app.getPath('downloads')+'/'+new Date().toISOString()
         })
         
         if(!filePath||canceled) return 1;
