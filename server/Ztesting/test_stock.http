@@ -1,0 +1,129 @@
+### testing
+get http://localhost:3000/testing/
+
+### login_page/log_in -- correct
+POST  http://localhost:3000/db/login_page/log_in HTTP/1.1/
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="password"
+
+google_cs
+--bababa
+Content-Disposition: form-data; name="name"
+
+google_cs
+--bababa--
+
+
+### /summary_page/high_level
+get  http://localhost:3000/db/summary_page/high_level HTTP/1.1/
+
+
+
+### /stock_page/fetch_item_list
+get  http://localhost:3000/db/stock_page/fetch_item_list HTTP/1.1/
+
+
+### /stock_page/delete_item 
+POST  http://localhost:3000/db/stock_page/delete_item HTTP/1.1/
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="item_id_array"
+
+[10,2,1]
+--bababa--
+
+
+### /stock_page/update_item 
+POST  http://localhost:3000/db/stock_page/update_item HTTP/1.1/
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="item_id"
+
+10
+--bababa
+Content-Disposition: form-data; name="name"
+
+hhh
+--bababa
+Content-Disposition: form-data; name="type"
+
+hhh
+--bababa
+Content-Disposition: form-data; name="icon"; filename="bbb.png"
+Content-Type: image/png
+
+
+--bababa
+Content-Disposition: form-data; name="stock"
+
+222
+--bababa
+Content-Disposition: form-data; name="price"
+
+222
+--bababa--
+
+### /stock_page/new_item 
+POST  http://localhost:3000/db/stock_page/new_item HTTP/1.1/
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="name"
+
+slkdaw
+--bababa
+Content-Disposition: form-data; name="type"
+
+dsrt
+--bababa
+Content-Disposition: form-data; name="icon"; filename="bbb.png"
+Content-Type: image/png
+
+< ./sampleImg.png
+--bababa
+Content-Disposition: form-data; name="stock"
+
+12
+--bababa
+Content-Disposition: form-data; name="price"
+
+56
+--bababa--
+
+
+
+
+
+
+### /transaction_page/update_transaction
+post http://localhost:3000/db/transaction_page/update_transaction
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="data"
+
+{"time":"2020-12-11 16:03:01","2":2,"3":3}
+--bababa--
+
+### /transaction_page/fetch_transaction_history
+get  http://localhost:3000/db/transaction_page/fetch_transaction_history HTTP/1.1/
+
+
+
+### /transaction_page/post_transaction
+post http://localhost:3000/db/transaction_page/post_transaction
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="data"
+
+{"2":50,"3":90}
+--bababa--
+
+
+
+

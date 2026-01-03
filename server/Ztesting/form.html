@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="/form.js"></script>
+</head>
+<body>
+    <form id="a" enctype="multipart/form-data">
+        <input type="text" name="a" value="12"><br/>
+        <input type="file" name="mySample" ><br/>
+        <input type="submit">
+    </form>
+    
+    <button onclick="myfunc()">click me</button>
+    <button onclick="testing()">cookie</button>
+    <button onclick="login()">login</button>
+    <button onclick="fetchlist()">fetch</button>
+
+    <script>
+        async function login(){
+            let formbody = new FormData();
+            formbody.append("password","google_cs");
+            formbody.append("name","google_cs");
+            let data = await (
+                await fetch('http://localhost:3000/db/login_page/log_in',{
+                    method:"POST",
+                    credentials:"include",
+                    body:formbody
+                })
+            ).text()
+        }
+        async function fetchlist(){
+
+        }
+        async function testing(){
+            let aa = await (
+                await fetch('http://localhost:3000/testing',{
+                    credentials:"include"
+                })
+            ).text()
+            console.log(aa);
+        }
+
+
+        document.getElementById('a').addEventListener("submit",function(e){
+            e.preventDefault();
+
+            let formbody = new FormData(e.target);
+            
+            console.log(Array.from(formbody.entries()));
+            fetch("http://localhost:3000/testing",{
+                method:"POST",
+                body:formbody,
+            }).then(val => val.text())
+            .then(txt => {
+                let img = document.createElement('img');
+                img.src = "data:image;base64,"+txt;
+                document.body.append(img);
+                console.log(txt);
+            })
+
+            // img form
+            // let formbody = new FormData (e.target);
+            // console.log(Array.from(formbody.entries()));
+            // fetch("http://localhost:3000/testing",{
+            //     method:"POST",
+            //     body:formbody,
+            // }).then(val => val.text())
+            // .then(txt => {
+            //     let img = document.createElement('img');
+            //     img.src = "data:image;base64,"+txt;
+            //     document.body.append(img);
+            //     console.log(txt);
+            // })
+        })
+    </script>
+</body>
+</html>

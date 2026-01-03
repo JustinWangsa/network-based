@@ -1,0 +1,99 @@
+
+### drop table
+GET http://localhost:3000/db/admin/dropTable HTTP/1.1
+
+### create table
+GET http://localhost:3000/db/admin/createTable HTTP/1.1
+
+### login_page/sign up
+POST http://localhost:3000/db/login_page/sign_up HTTP/1.1
+Content-Type: multipart/form-data; boundary=flasfls
+
+--flasfls
+Content-Disposition: form-data; name="companyName"
+
+lockheed
+--flasfls
+Content-Disposition: form-data; name="managerName"
+
+lockheed_mg
+--flasfls
+Content-Disposition: form-data; name="managerPassword"
+
+lockheed_mg
+--flasfls
+Content-Disposition: form-data; name="cashierName"
+
+lockheed_cs
+--flasfls
+Content-Disposition: form-data; name="cashierPassword"
+
+lockheed_cs
+--flasfls--
+#end
+
+### who am i
+GET http://localhost:3000/db/admin/WhoAmI HTTP/1.1
+
+### /login_page/log_out
+GET http://localhost:3000/db/login_page/log_out HTTP/1.1
+
+### login_page/log_in -- right
+POST  http://localhost:3000/db/login_page/log_in HTTP/1.1
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="password"
+
+google_mg
+--bababa
+Content-Disposition: form-data; name="name"
+
+google_mg
+--bababa--
+
+### login_page/log_in -- false
+POST  http://localhost:3000/db/login_page/log_in HTTP/1.1
+Content-Type: multipart/form-data; boundary=bababa
+
+--bababa
+Content-Disposition: form-data; name="password"
+
+lockheed_mg
+--bababa
+Content-Disposition: form-data; name="name"
+
+lockheed_wrong
+--bababa--
+
+
+
+
+### fetch_item_list
+GET http://localhost:3000/db/stock_page/fetch_item_list HTTP/1.1
+
+
+
+
+
+###testing
+POST http://localhost:3000/db/testing HTTP/1.1
+Content-Type: multipart/form-data; boundary=blablabla
+
+--blablabla
+Content-Disposition: form-data; name="hhh"
+
+
+--blablabla
+Content-Disposition: form-data; name="aaa"
+
+12
+--blablabla--
+
+
+### serving page
+GET http://localhost:3000/src/assets/Logo.svg
+
+### serving page
+GET http://localhost:3000/src/fas
+
